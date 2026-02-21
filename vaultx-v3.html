@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>VaultX — Investment Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════ CSS VARIABLES ═══════════════ */
+:root{
+  --bg:#06080d;--surf:#0c1018;--surf2:#111720;--surf3:#161e28;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --accent:#00e5a0;--a2:#00aaff;--warn:#f59e0b;--red:#ff4d6d;
+  --text:#dde5ee;--muted:#3d4f60;--muted2:#7a8d9f;
+  --gold:#f59e0b;--silver:#94a3b8;--plat:#00aaff;--diamond:#00e5a0;
+  --elite:#c084fc;--bronze:#cd7f32;--sw:240px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:14px;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow-x:hidden;}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--surf3);border-radius:99px;}
+
+/* ════════════════════════════════════════════
+   AUTH SCREENS (Login / Signup / Forgot)
+════════════════════════════════════════════ */
+#auth-screen{
+  display:flex;min-height:100vh;
+  background:var(--bg);
+  position:fixed;inset:0;z-index:1000;
+  transition:opacity .4s;
+}
+#auth-screen.hidden{opacity:0;pointer-events:none;}
+.auth-left{
+  width:420px;flex-shrink:0;
+  background:var(--surf);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  padding:40px;
+  overflow-y:auto;
+}
+.auth-right{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+  background:radial-gradient(ellipse at 30% 60%,rgba(0,229,160,0.06) 0%,transparent 60%),
+             radial-gradient(ellipse at 80% 20%,rgba(0,170,255,0.05) 0%,transparent 50%);
+}
+.auth-brand{display:flex;align-items:center;gap:10px;margin-bottom:40px;}
+.auth-logo-box{width:36px;height:36px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#000;font-family:'Syne',sans-serif;}
+.auth-brand-name{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.5px;}
+.auth-brand-name em{color:var(--accent);font-style:normal;}
+.auth-panel{display:none;}
+.auth-panel.active{display:block;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.auth-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px;}
+.auth-sub{font-size:11px;color:var(--muted2);margin-bottom:28px;line-height:1.6;}
+.auth-sub a{color:var(--accent);cursor:pointer;text-decoration:none;}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:18px 0;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.auth-divider span{font-size:10px;color:var(--muted);}
+
+/* Auth visual */
+.auth-visual{text-align:center;padding:40px;}
+.auth-visual h2{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;margin-bottom:12px;line-height:1.3;}
+.auth-visual p{font-size:11px;color:var(--muted2);line-height:1.8;max-width:340px;margin:0 auto 32px;}
+.stat-pills{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.stat-pill{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:14px 20px;text-align:center;}
+.sp-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--accent);}
+.sp-lbl{font-size:9px;color:var(--muted);margin-top:3px;}
+.floating-card{
+  background:var(--surf);border:1px solid var(--border2);border-radius:14px;padding:20px;
+  margin:28px auto 0;max-width:320px;
+  animation:float 4s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.fc-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:11px;}
+.fc-row:last-child{margin-bottom:0;}
+
+/* ════════════════════════════════════════════
+   APP LAYOUT
+════════════════════════════════════════════ */
+#app{display:none;}
+#app.visible{display:flex;min-height:100vh;}
+
+/* ─── SIDEBAR ─── */
+.sidebar{
+  width:var(--sw);min-height:100vh;
+  background:var(--surf);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:22px 0;
+  flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:200;overflow-y:auto;
+  transition:transform .3s;
+}
+.sidebar.mobile-hidden{transform:translateX(-100%);}
+.logo{padding:0 20px 26px;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;display:flex;align-items:center;gap:9px;letter-spacing:-.5px;}
+.logo-box{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#000;flex-shrink:0;}
+.logo em{color:var(--accent);font-style:normal;}
+.nav-sep{padding:0 20px 5px;font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-top:12px;}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 20px;font-size:11px;color:var(--muted2);cursor:pointer;border-left:2px solid transparent;transition:all .17s;user-select:none;}
+.ni:hover{color:var(--text);background:rgba(255,255,255,0.025);}
+.ni.active{color:var(--accent);border-left-color:var(--accent);background:rgba(0,229,160,0.06);}
+.ni .ic{font-size:13px;width:16px;text-align:center;}
+.ni .bc{margin-left:auto;background:var(--red);color:#fff;font-size:7px;padding:2px 5px;border-radius:99px;font-weight:700;}
+.sidebar-foot{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border);}
+.user-row{display:flex;align-items:center;gap:9px;cursor:pointer;}
+.ava{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--a2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000;font-family:'Syne',sans-serif;flex-shrink:0;}
+.ava.admin-ava{background:linear-gradient(135deg,var(--elite),var(--red));}
+.uname{font-size:10.5px;font-weight:600;}
+.utier{font-size:9px;color:var(--gold);}
+.logout-btn{font-size:9px;color:var(--muted);cursor:pointer;margin-top:3px;}
+.logout-btn:hover{color:var(--red);}
+
+/* ─── TOPBAR (mobile) ─── */
+.topbar{
+  display:none;position:fixed;top:0;left:0;right:0;z-index:300;
+  background:var(--surf);border-bottom:1px solid var(--border);
+  padding:12px 16px;align-items:center;justify-content:space-between;
+}
+.hamburger{width:32px;height:32px;border:1px solid var(--border2);border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;background:var(--surf2);}
+.hamburger span{width:16px;height:2px;background:var(--muted2);border-radius:2px;transition:all .2s;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;}
+.sidebar-overlay.show{display:block;}
+
+/* ─── MAIN ─── */
+.main{flex:1;margin-left:var(--sw);min-height:100vh;overflow-y:auto;}
+.page{display:none;padding:30px 36px;animation:fadeIn .3s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ════════════════════════════════════════════
+   SHARED COMPONENTS
+════════════════════════════════════════════ */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:26px;gap:14px;flex-wrap:wrap;}
+.pt{font-family:'Syne',sans-serif;font-size:23px;font-weight:700;}
+.ps{font-size:10px;color:var(--muted);margin-top:4px;}
+.btn{padding:8px 16px;border-radius:8px;font-size:10.5px;font-family:'DM Mono',monospace;cursor:pointer;border:none;font-weight:500;letter-spacing:.3px;transition:all .17s;display:inline-flex;align-items:center;gap:6px;}
+.btn-g{background:var(--surf2);color:var(--muted2);border:1px solid var(--border);}
+.btn-g:hover{border-color:var(--muted);color:var(--text);}
+.btn-p{background:var(--accent);color:#000;font-weight:700;}
+.btn-p:hover{background:#05ffb5;transform:translateY(-1px);}
+.btn-r{background:rgba(255,77,109,0.1);color:var(--red);border:1px solid rgba(255,77,109,0.22);}
+.btn-r:hover{background:rgba(255,77,109,0.2);}
+.btn-b{background:rgba(0,170,255,0.1);color:var(--a2);border:1px solid rgba(0,170,255,0.22);}
+.btn-warn{background:rgba(245,158,11,0.1);color:var(--warn);border:1px solid rgba(245,158,11,0.22);}
+.btn-lg{padding:13px 24px;font-size:12px;border-radius:10px;}
+.btn-bl{width:100%;justify-content:center;}
+.card{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:22px;}
+.card-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+.ct{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;}
+.cs{font-size:9.5px;color:var(--muted);margin-top:3px;}
+.badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:8.5px;font-weight:600;letter-spacing:.4px;}
+.bg-green{background:rgba(0,229,160,0.12);color:var(--accent);}
+.bg-blue{background:rgba(0,170,255,0.12);color:var(--a2);}
+.bg-gold{background:rgba(245,158,11,0.13);color:var(--gold);}
+.bg-red{background:rgba(255,77,109,0.12);color:var(--red);}
+.bg-purple{background:rgba(192,132,252,0.12);color:var(--elite);}
+.bg-silver{background:rgba(148,163,184,0.12);color:var(--silver);}
+.bg-bronze{background:rgba(205,127,50,0.13);color:var(--bronze);}
+.bg-warn{background:rgba(245,158,11,0.13);color:var(--warn);}
+.bg-muted{background:rgba(100,120,140,0.1);color:var(--muted2);}
+.text-green{color:var(--accent);}
+.text-red{color:var(--red);}
+.text-gold{color:var(--gold);}
+.text-muted{color:var(--muted2);}
+.text-blue{color:var(--a2);}
+.tag{font-size:8.5px;padding:2px 7px;border-radius:99px;font-weight:600;letter-spacing:.3px;}
+.field{margin-bottom:14px;}
+.fl{font-size:9px;color:var(--muted);letter-spacing:.5px;margin-bottom:6px;text-transform:uppercase;display:block;}
+.fi{width:100%;padding:11px 13px;background:var(--surf2);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-size:12px;font-family:'DM Mono',monospace;outline:none;transition:border-color .18s;}
+.fi:focus{border-color:var(--accent);}
+select.fi{cursor:pointer;}
+.fh{font-size:9px;color:var(--muted);margin-top:4px;}
+.ferr{font-size:9px;color:var(--red);margin-top:4px;display:none;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:8.5px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;text-align:left;padding:0 0 10px;border-bottom:1px solid var(--border);}
+.tbl td{padding:11px 0;font-size:10.5px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.prog{background:var(--surf3);border-radius:99px;height:4px;}
+.prog-f{height:100%;border-radius:99px;background:var(--accent);}
+.sc{background:var(--surf);border:1px solid var(--border);border-radius:13px;padding:18px;transition:border-color .2s;animation:slideUp .4s ease both;}
+.sc:hover{border-color:rgba(255,255,255,0.13);}
+.sc.hl{border-color:rgba(0,229,160,0.2);background:linear-gradient(135deg,rgba(0,229,160,0.05),var(--surf));}
+@keyframes slideUp{from{opacity:0;transform:translateY(11px);}to{opacity:1;transform:translateY(0);}}
+.sc:nth-child(1){animation-delay:.05s}.sc:nth-child(2){animation-delay:.1s}.sc:nth-child(3){animation-delay:.15s}.sc:nth-child(4){animation-delay:.2s}
+.sc-lbl{font-size:8.5px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:9px;}
+.sc-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;letter-spacing:-.5px;}
+.sc-meta{font-size:9.5px;color:var(--muted2);margin-top:5px;}
+.tx-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.tx-dep{background:rgba(0,229,160,0.1);}
+.tx-ear{background:rgba(0,170,255,0.1);}
+.tx-wit{background:rgba(255,77,109,0.1);}
+.tx-ref{background:rgba(192,132,252,0.1);}
+.tx-item{display:flex;align-items:center;gap:11px;padding:10px 13px;background:var(--surf2);border-radius:10px;}
+.tx-det{flex:1;}
+.tx-t{font-size:10.5px;font-weight:500;}
+.tx-d{font-size:8.5px;color:var(--muted);margin-top:2px;}
+.tx-amt{font-family:'Syne',sans-serif;font-size:12.5px;font-weight:700;white-space:nowrap;}
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
+.toggle{width:40px;height:21px;border-radius:99px;background:var(--surf3);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--accent);}
+.toggle::after{content:'';position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;top:3px;left:3px;transition:left .2s;}
+.toggle.on::after{left:22px;}
+.qb{padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--surf2);color:var(--muted2);font-size:9.5px;font-family:'DM Mono',monospace;cursor:pointer;transition:all .15s;}
+.qb:hover,.qb.sel{border-color:var(--accent);color:var(--accent);background:rgba(0,229,160,0.06);}
+.alert-box{border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:11px;margin-bottom:18px;}
+.alert-warn{background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);}
+.alert-red{background:rgba(255,77,109,0.07);border:1px solid rgba(255,77,109,0.2);}
+.alert-green{background:rgba(0,229,160,0.07);border:1px solid rgba(0,229,160,0.18);}
+.alert-blue{background:rgba(0,170,255,0.07);border:1px solid rgba(0,170,255,0.18);}
+.tab-row{display:flex;gap:2px;background:var(--surf2);border-radius:8px;padding:3px;}
+.tab{padding:5px 10px;font-size:9.5px;border-radius:6px;cursor:pointer;color:var(--muted);transition:all .15s;}
+.tab.active{background:var(--surf);color:var(--text);}
+
+/* ════════════════════════════════════════════
+   DASHBOARD
+════════════════════════════════════════════ */
+.ticker{background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:9px 16px;display:flex;gap:22px;align-items:center;margin-bottom:22px;overflow-x:auto;}
+.tki{display:flex;align-items:center;gap:6px;font-size:10.5px;white-space:nowrap;}
+.tkl{color:var(--muted);}
+.tku{font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(0,229,160,0.1);color:var(--accent);}
+.tkd{font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(255,77,109,0.1);color:var(--red);}
+.mid-grid{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:20px;}
+.bot-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.chart-wrap{height:160px;position:relative;margin-bottom:10px;}
+.chart-wrap svg{width:100%;height:100%;}
+.chart-lbl{display:flex;justify-content:space-between;font-size:8.5px;color:var(--muted);}
+.chart-tip{position:absolute;top:12px;right:8%;background:var(--surf2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-size:10px;pointer-events:none;}
+.chart-tip-val{font-family:'Syne',sans-serif;font-size:16px;color:var(--accent);font-weight:700;}
+.earn-item{background:var(--surf2);border-radius:9px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.earn-item:last-child{margin-bottom:0;}
+.plan-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+/* ════════════════════════════════════════════
+   DEPOSIT PAGE
+════════════════════════════════════════════ */
+.dep-layout{display:grid;grid-template-columns:1fr 320px;gap:20px;}
+.method-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.mc{background:var(--surf2);border:1px solid var(--border2);border-radius:11px;padding:14px;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:10px;}
+.mc:hover{border-color:rgba(255,255,255,0.18);}
+.mc.sel{border-color:var(--accent);background:rgba(0,229,160,0.05);}
+.mc-icon{font-size:20px;}
+.mc-name{font-size:11px;font-weight:500;}
+.mc-detail{font-size:8.5px;color:var(--muted);margin-top:2px;}
+.steps-bar{display:flex;margin-bottom:24px;}
+.stp{flex:1;text-align:center;padding:11px 8px;font-size:9.5px;color:var(--muted);border-bottom:2px solid var(--border2);}
+.stp.done{color:var(--accent);border-bottom-color:var(--accent);}
+.stp.cur{color:var(--text);border-bottom-color:var(--text);}
+.stp-num{width:20px;height:20px;border-radius:50%;background:var(--surf2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:8px;margin:0 auto 5px;}
+.stp.done .stp-num{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700;}
+.stp.cur .stp-num{border-color:var(--text);color:var(--text);}
+.crypto-address{background:var(--surf2);border:1px solid var(--border2);border-radius:10px;padding:16px;text-align:center;margin-bottom:14px;}
+.qr-placeholder{width:120px;height:120px;background:var(--surf3);border-radius:8px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:32px;border:2px dashed var(--border2);}
+.wallet-addr{font-size:10px;color:var(--accent);word-break:break-all;background:var(--surf);padding:10px;border-radius:7px;margin-top:8px;cursor:pointer;}
+.wallet-addr:hover{background:rgba(0,229,160,0.05);}
+.info-side{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:20px;height:fit-content;}
+.info-item{display:flex;gap:11px;margin-bottom:14px;}
+.info-item:last-child{margin-bottom:0;}
+.ii-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+
+/* ════════════════════════════════════════════
+   WITHDRAW PAGE — LOCKED PRINCIPAL LOGIC
+════════════════════════════════════════════ */
+.balance-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
+.bal-card{border-radius:12px;padding:16px;}
+.bal-available{background:linear-gradient(135deg,rgba(0,229,160,0.07),rgba(0,229,160,0.03));border:1px solid rgba(0,229,160,0.18);}
+.bal-locked{background:rgba(255,77,109,0.04);border:1px solid rgba(255,77,109,0.15);}
+.bal-lbl{font-size:9px;color:var(--muted2);margin-bottom:4px;}
+.bal-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;}
+.bal-note{font-size:8.5px;color:var(--muted);margin-top:3px;line-height:1.5;}
+.locked-breakdown{margin-top:12px;}
+.lock-item{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:var(--surf2);border-radius:8px;margin-bottom:7px;font-size:10.5px;}
+.lock-item:last-child{margin-bottom:0;}
+
+/* ════════════════════════════════════════════
+   INVEST PAGE
+════════════════════════════════════════════ */
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
+.plan-card{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:22px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.plan-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.14);}
+.plan-card.sel{transform:translateY(-4px);}
+.hot-tag{position:absolute;top:12px;right:12px;font-size:7.5px;font-weight:700;letter-spacing:1px;padding:3px 7px;border-radius:4px;text-transform:uppercase;}
+.plan-icon{font-size:24px;margin-bottom:9px;}
+.plan-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:3px;}
+.plan-range{font-size:9.5px;color:var(--muted2);margin-bottom:14px;}
+.plan-roi{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:1px;}
+.plan-roi-sub{font-size:9px;color:var(--muted);margin-bottom:14px;}
+.plan-feats{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:18px;}
+.plan-feats li{font-size:10px;display:flex;align-items:center;gap:7px;color:var(--muted2);}
+.plan-feats li .ck{color:var(--accent);font-size:11px;}
+.plan-feats li .no{color:var(--muted);opacity:.4;}
+.plan-btn{width:100%;padding:9px;border-radius:9px;border:1px solid var(--border2);background:var(--surf2);color:var(--text);font-size:10.5px;font-family:'DM Mono',monospace;cursor:pointer;font-weight:600;transition:all .18s;}
+.plan-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,160,0.05);}
+.plan-btn.sel{background:var(--accent);color:#000;border-color:var(--accent);}
+.drawer{background:var(--surf);border:1px solid rgba(0,229,160,0.18);border-radius:16px;padding:26px;margin-bottom:18px;display:none;}
+.drawer.show{display:block;animation:fadeIn .25s ease;}
+.drawer-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+.roi-box{background:var(--surf2);border-radius:11px;padding:16px;border:1px solid var(--border);}
+.roi-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-size:10.5px;}
+.roi-row:last-child{margin-bottom:0;}
+.roi-row .lbl{color:var(--muted2);}
+.roi-total-row{border-top:1px solid var(--border);padding-top:10px;margin-top:4px;}
+.roi-total-row .val{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--accent);}
+
+/* ════════════════════════════════════════════
+   KYC
+════════════════════════════════════════════ */
+.kyc-steps{display:flex;position:relative;margin-bottom:28px;}
+.kyc-steps::before{content:'';position:absolute;top:18px;left:8%;right:8%;height:2px;background:var(--border2);z-index:0;}
+.ks{flex:1;text-align:center;position:relative;z-index:1;}
+.ks-c{width:36px;height:36px;border-radius:50%;border:2px solid var(--border2);background:var(--surf);display:flex;align-items:center;justify-content:center;font-size:12px;margin:0 auto 7px;transition:all .3s;}
+.ks.done .ks-c{border-color:var(--accent);background:var(--accent);color:#000;font-weight:700;}
+.ks.cur .ks-c{border-color:var(--a2);background:rgba(0,170,255,0.1);color:var(--a2);}
+.ks-lbl{font-size:9px;color:var(--muted);}
+.ks.done .ks-lbl{color:var(--accent);}
+.ks.cur .ks-lbl{color:var(--text);}
+.upload-zone{border:2px dashed var(--border2);border-radius:11px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surf2);}
+.upload-zone:hover{border-color:var(--accent);background:rgba(0,229,160,0.03);}
+
+/* ════════════════════════════════════════════
+   PORTFOLIO
+════════════════════════════════════════════ */
+.cal-day{padding:5px 3px;font-size:9.5px;border-radius:5px;text-align:center;cursor:pointer;}
+.cal-day.earned{background:rgba(0,229,160,0.12);color:var(--accent);}
+.cal-day.today{background:var(--accent);color:#000;font-weight:700;}
+.cal-day.future{background:var(--surf2);color:var(--muted);}
+
+/* ════════════════════════════════════════════
+   ADMIN PANEL
+════════════════════════════════════════════ */
+.admin-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:24px;overflow-x:auto;}
+.atab{padding:9px 18px;font-size:10.5px;color:var(--muted2);cursor:pointer;border-bottom:2px solid transparent;transition:all .18s;margin-bottom:-1px;white-space:nowrap;}
+.atab:hover{color:var(--text);}
+.atab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.adm-content{display:none;}
+.adm-content.active{display:block;animation:fadeIn .2s ease;}
+.action-btn{padding:3px 9px;font-size:8.5px;border-radius:5px;cursor:pointer;border:none;font-family:'DM Mono',monospace;font-weight:600;transition:all .15s;}
+.ab-approve{background:rgba(0,229,160,0.12);color:var(--accent);}
+.ab-reject{background:rgba(255,77,109,0.1);color:var(--red);}
+.ab-view{background:var(--surf3);color:var(--muted2);}
+.ab-warn{background:rgba(245,158,11,0.1);color:var(--warn);}
+.action-btn:hover{opacity:.8;}
+
+/* ════════════════════════════════════════════
+   SETTINGS
+════════════════════════════════════════════ */
+.settings-layout{display:grid;grid-template-columns:190px 1fr;gap:20px;}
+.snav .sni2{padding:8px 13px;font-size:10.5px;color:var(--muted2);cursor:pointer;border-radius:7px;margin-bottom:3px;transition:all .15s;}
+.snav .sni2:hover{background:var(--surf2);color:var(--text);}
+.snav .sni2.active{background:rgba(0,229,160,0.07);color:var(--accent);}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);}
+.setting-row:last-child{border-bottom:none;}
+.sr-title{font-size:11px;font-weight:500;}
+.sr-sub{font-size:9.5px;color:var(--muted);margin-top:3px;}
+
+/* ════════════════════════════════════════════
+   NOTIFICATIONS
+════════════════════════════════════════════ */
+.notif{display:flex;align-items:flex-start;gap:12px;padding:13px;background:var(--surf2);border-radius:10px;border-left:3px solid;margin-bottom:9px;}
+.notif:last-child{margin-bottom:0;}
+.notif.n-success{border-color:var(--accent);}
+.notif.n-warn{border-color:var(--warn);}
+.notif.n-info{border-color:var(--a2);}
+.notif.n-error{border-color:var(--red);}
+.notif-icon{font-size:17px;flex-shrink:0;margin-top:1px;}
+.notif-title{font-size:11.5px;font-weight:600;margin-bottom:3px;}
+.notif-sub{font-size:9.5px;color:var(--muted2);line-height:1.6;}
+.notif-time{font-size:8.5px;color:var(--muted);margin-top:5px;}
+
+/* ════════════════════════════════════════════
+   MOBILE RESPONSIVE
+════════════════════════════════════════════ */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.mob-open{transform:translateX(0);}
+  .topbar{display:flex;}
+  .main{margin-left:0;padding-top:58px;}
+  .page{padding:18px 16px;}
+  .grid4{grid-template-columns:1fr 1fr;}
+  .grid2,.grid3,.mid-grid,.bot-grid,.dep-layout,.balance-breakdown{grid-template-columns:1fr;}
+  .plans-grid{grid-template-columns:1fr 1fr;}
+  .drawer-grid,.settings-layout,.auth-right{display:none;}
+  .auth-left{width:100%;min-height:100vh;padding:28px 24px;}
+  .w-layout{grid-template-columns:1fr;}
+  .tbl th:nth-child(n+4),.tbl td:nth-child(n+4){display:none;}
+  .ph{flex-direction:column;}
+  .ph>div:last-child{width:100%;}
+  .ph>div:last-child .btn{width:100%;justify-content:center;}
+  .ticker{gap:14px;}
+  .admin-tabs{padding-bottom:2px;}
+}
+@media(max-width:480px){
+  .plans-grid{grid-template-columns:1fr;}
+  .grid4{grid-template-columns:1fr 1fr;}
+  .method-grid{grid-template-columns:1fr;}
+}
+
+.wf-badge{position:fixed;bottom:14px;right:14px;background:rgba(0,229,160,0.07);border:1px solid rgba(0,229,160,0.2);color:var(--accent);font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:5px 11px;border-radius:99px;font-family:'DM Mono',monospace;z-index:999;}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     AUTH SCREEN
+════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="auth-logo-box">V</div>
+      <div class="auth-brand-name">Vault<em>X</em></div>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="auth-panel active" id="auth-login">
+      <div class="auth-title">Welcome back 👋</div>
+      <div class="auth-sub">Don't have an account? <a onclick="showAuth('signup')">Create one free</a></div>
+      <div class="field"><label class="fl">Email Address</label><input class="fi" type="email" placeholder="you@example.com" id="login-email"/></div>
+      <div class="field"><label class="fl">Password</label><input class="fi" type="password" placeholder="••••••••" id="login-pass"/></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+        <label style="display:flex;align-items:center;gap:7px;font-size:10px;cursor:pointer;"><input type="checkbox" style="accent-color:var(--accent)"/> Remember me</label>
+        <a class="auth-sub" style="margin:0;font-size:10px;" onclick="showAuth('forgot')">Forgot password?</a>
+      </div>
+      <button class="btn btn-p btn-lg btn-bl" onclick="doLogin()">Sign In →</button>
+      <div class="auth-divider"><span>or continue as</span></div>
+      <div style="display:flex;gap:9px;">
+        <button class="btn btn-g btn-bl" onclick="doLoginAs('user')">👤 Demo User</button>
+        <button class="btn btn-g btn-bl" onclick="doLoginAs('admin')">👑 Demo Admin</button>
+      </div>
+      <div style="font-size:9px;color:var(--muted);text-align:center;margin-top:10px">Demo buttons skip auth for wireframe preview</div>
+    </div>
+
+    <!-- SIGNUP -->
+    <div class="auth-panel" id="auth-signup">
+      <div class="auth-title">Create your account</div>
+      <div class="auth-sub">Already have one? <a onclick="showAuth('login')">Sign in</a></div>
+      <div class="grid2">
+        <div class="field"><label class="fl">First Name</label><input class="fi" placeholder="Amara" /></div>
+        <div class="field"><label class="fl">Last Name</label><input class="fi" placeholder="Kone" /></div>
+      </div>
+      <div class="field"><label class="fl">Email Address</label><input class="fi" type="email" placeholder="you@example.com" /></div>
+      <div class="field"><label class="fl">Phone Number</label><input class="fi" type="tel" placeholder="+254 712 345 678" /></div>
+      <div class="field"><label class="fl">Password</label><input class="fi" type="password" placeholder="Min 8 characters" /></div>
+      <div class="field"><label class="fl">Referral Code (optional)</label><input class="fi" placeholder="e.g. AMARA2026" /></div>
+      <div class="field">
+        <div id="pass-strength" style="height:4px;border-radius:99px;background:var(--surf3);margin-bottom:6px;"><div style="height:100%;border-radius:99px;width:0;background:var(--red);transition:all .3s;" id="ps-bar"></div></div>
+        <div id="ps-label" style="font-size:9px;color:var(--muted)">Enter a password</div>
+      </div>
+      <label style="display:flex;align-items:flex-start;gap:8px;font-size:10px;margin-bottom:16px;cursor:pointer;"><input type="checkbox" style="accent-color:var(--accent);margin-top:2px;flex-shrink:0"/> I agree to the <a class="auth-sub" style="margin:0;color:var(--accent)">Terms of Service</a> and <a class="auth-sub" style="margin:0;color:var(--accent)">Privacy Policy</a></label>
+      <button class="btn btn-p btn-lg btn-bl" onclick="doSignup()">Create Account →</button>
+      <div style="font-size:9px;color:var(--muted);text-align:center;margin-top:10px">A verification email will be sent to confirm your address</div>
+    </div>
+
+    <!-- FORGOT PASSWORD -->
+    <div class="auth-panel" id="auth-forgot">
+      <div class="auth-title">Reset password</div>
+      <div class="auth-sub">Enter your email and we'll send a reset link. <a onclick="showAuth('login')">Back to login</a></div>
+      <div class="field"><label class="fl">Email Address</label><input class="fi" type="email" placeholder="you@example.com" /></div>
+      <button class="btn btn-p btn-lg btn-bl" onclick="alert('✅ Reset link sent! Check your email.')">Send Reset Link</button>
+    </div>
+
+    <!-- EMAIL VERIFY -->
+    <div class="auth-panel" id="auth-verify">
+      <div style="text-align:center;padding:20px 0;">
+        <div style="font-size:48px;margin-bottom:16px">📧</div>
+        <div class="auth-title" style="text-align:center">Check your email</div>
+        <div class="auth-sub" style="text-align:center">We sent a 6-digit code to <strong>amara@example.com</strong></div>
+        <div style="display:flex;gap:8px;justify-content:center;margin:22px 0;">
+          <input class="fi" style="width:44px;text-align:center;font-size:18px;padding:10px 4px;" maxlength="1"/>
+          <input class="fi" style="width:44px;text-align:center;font-size:18px;padding:10px 4px;" maxlength="1"/>
+          <input class="fi" style="width:44px;text-align:center;font-size:18px;padding:10px 4px;" maxlength="1"/>
+          <input class="fi" style="width:44px;text-align:center;font-size:18px;padding:10px 4px;" maxlength="1"/>
+          <input class="fi" style="width:44px;text-align:center;font-size:18px;padding:10px 4px;" maxlength="1"/>
+          <input class="fi" style="width:44px;text-align:center;font-size:18px;padding:10px 4px;" maxlength="1"/>
+        </div>
+        <button class="btn btn-p btn-lg btn-bl" onclick="doLoginAs('user')">Verify & Continue →</button>
+        <div style="font-size:9px;color:var(--muted);margin-top:12px">Didn't receive it? <a class="auth-sub" style="margin:0">Resend code</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-visual">
+      <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.18);padding:6px 14px;border-radius:99px;font-size:10px;color:var(--accent);margin-bottom:24px;">
+        <span>●</span> 1,284 investors earning daily
+      </div>
+      <h2>Your money<br>works while<br><span style="color:var(--accent)">you sleep.</span></h2>
+      <p>Join thousands of investors earning consistent daily returns through our tiered investment plans — from $100 to $10,000+.</p>
+      <div class="stat-pills">
+        <div class="stat-pill"><div class="sp-val">2.5%</div><div class="sp-lbl">Max Daily ROI</div></div>
+        <div class="stat-pill"><div class="sp-val">$8.2M</div><div class="sp-lbl">Total Invested</div></div>
+        <div class="stat-pill"><div class="sp-val">150%</div><div class="sp-lbl">Max Total ROI</div></div>
+      </div>
+      <div class="floating-card">
+        <div class="fc-row"><span style="font-size:10px;color:var(--muted)">Today's Earnings</span><span class="badge bg-green">Live</span></div>
+        <div class="fc-row"><span style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--accent)">+$87.40</span><span style="font-size:10px;color:var(--muted)">auto-credited</span></div>
+        <hr class="divider"/>
+        <div class="fc-row"><span style="font-size:10px;color:var(--muted)">Next payout in</span><span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--text)" id="countdown">03:42:15</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     APP
+════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- Overlay for mobile sidebar -->
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- TOPBAR (mobile) -->
+  <div class="topbar">
+    <div class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
+    <div class="logo" style="padding:0"><div class="logo-box">V</div>Vault<em>X</em></div>
+    <div class="ava" id="topbar-ava" style="cursor:pointer" onclick="go('settings',null)">AK</div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo"><div class="logo-box">V</div>Vault<em>X</em></div>
+    <div class="nav-sep">Main</div>
+    <div class="ni active" onclick="go('dashboard',this)"><span class="ic">◈</span> Dashboard</div>
+    <div class="ni" onclick="go('portfolio',this)"><span class="ic">◎</span> Portfolio</div>
+    <div class="ni" onclick="go('invest',this)"><span class="ic">⬡</span> Invest</div>
+    <div class="ni" onclick="go('deposit',this)"><span class="ic">↓</span> Deposit</div>
+    <div class="ni" onclick="go('withdraw',this)"><span class="ic">↑</span> Withdraw</div>
+    <div class="ni" onclick="go('referrals',this)"><span class="ic">⊕</span> Referrals</div>
+    <div class="nav-sep">Account</div>
+    <div class="ni" onclick="go('kyc',this)"><span class="ic">🛡</span> KYC <span class="badge bg-warn" style="margin-left:auto;font-size:7.5px;">Pending</span></div>
+    <div class="ni" onclick="go('notifications',this)"><span class="ic">🔔</span> Notifications <span class="bc">3</span></div>
+    <div class="ni" onclick="go('transactions',this)"><span class="ic">↕</span> Transactions</div>
+    <div class="ni" onclick="go('settings',this)"><span class="ic">⚙</span> Settings</div>
+    <!-- ADMIN ONLY — hidden by default, shown via JS -->
+    <div class="nav-sep admin-only" style="display:none">Admin</div>
+    <div class="ni admin-only" style="display:none" onclick="go('admin',this)"><span class="ic">👑</span> Admin Panel</div>
+    <div class="sidebar-foot">
+      <div class="user-row" onclick="go('settings',null)">
+        <div class="ava" id="sidebar-ava">AK</div>
+        <div>
+          <div class="uname" id="sidebar-name">Amara Kone</div>
+          <div class="utier" id="sidebar-tier">★ Gold Member</div>
+        </div>
+      </div>
+      <div class="logout-btn" onclick="doLogout()">⏏ Sign out</div>
+    </div>
+  </aside>
+
+  <div class="main">
+
+<!-- ════════════════════════════════════════
+     DASHBOARD
+════════════════════════════════════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="ph">
+    <div><div class="pt" id="dash-greeting">Good morning, Amara 👋</div><div class="ps">Friday, 20 Feb 2026 · Portfolio performing well today</div></div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap;">
+      <button class="btn btn-g" onclick="go('deposit',qni(3))">↓ Deposit</button>
+      <button class="btn btn-g" onclick="go('withdraw',qni(4))">↑ Withdraw</button>
+      <button class="btn btn-p" onclick="go('invest',qni(2))">＋ Invest</button>
+    </div>
+  </div>
+
+  <div class="alert-box alert-warn">
+    <span style="font-size:16px">⚠️</span>
+    <div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--warn)">KYC Verification Required</div><div style="font-size:9.5px;color:var(--muted2);margin-top:2px">Complete identity verification to unlock withdrawals above $500 and access Platinum, Diamond & Elite plans.</div></div>
+    <button class="btn btn-warn" style="white-space:nowrap;font-size:9px;" onclick="go('kyc',qni(6))">Verify Now</button>
+  </div>
+
+  <div class="ticker">
+    <div class="tki"><span class="tkl">BTC</span>$97,412 <span class="tku">+2.4%</span></div>
+    <div class="tki"><span class="tkl">ETH</span>$3,184 <span class="tku">+1.1%</span></div>
+    <div class="tki"><span class="tkl">USDT</span>$1.00 <span class="tku">stable</span></div>
+    <div class="tki"><span class="tkl">Gold</span>$2,041 <span class="tkd">−0.3%</span></div>
+    <div class="tki"><span class="tkl">S&P</span>5,892 <span class="tku">+0.8%</span></div>
+    <div style="margin-left:auto;font-size:9px;color:var(--muted);white-space:nowrap">● Live 14:32 UTC</div>
+  </div>
+
+  <div class="grid4" style="margin-bottom:20px;">
+    <div class="sc hl"><div class="sc-lbl">Wallet Balance</div><div class="sc-val text-green">$4,218</div><div class="sc-meta">Earnings available</div></div>
+    <div class="sc"><div class="sc-lbl">Invested (Locked)</div><div class="sc-val">$5,500</div><div class="sc-meta" style="color:var(--red)">🔒 Not withdrawable</div></div>
+    <div class="sc"><div class="sc-lbl">Today's Earnings</div><div class="sc-val text-green">$87.40</div><div class="sc-meta">▲ +4.2% vs yesterday</div></div>
+    <div class="sc"><div class="sc-lbl">Next Auto-Payout</div><div class="sc-val" id="dash-countdown">03:42</div><div class="sc-meta">hrs remaining</div></div>
+  </div>
+
+  <div class="mid-grid">
+    <div class="card">
+      <div class="card-hd">
+        <div><div class="ct">Wallet Balance Growth</div><div class="cs">Earnings credited daily at 00:00 UTC</div></div>
+        <div class="tab-row"><div class="tab">7D</div><div class="tab active">1M</div><div class="tab">3M</div></div>
+      </div>
+      <div class="chart-wrap">
+        <svg viewBox="0 0 600 145" preserveAspectRatio="none">
+          <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00e5a0" stop-opacity=".17"/><stop offset="100%" stop-color="#00e5a0" stop-opacity="0"/></linearGradient></defs>
+          <line x1="0" y1="36" x2="600" y2="36" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          <line x1="0" y1="72" x2="600" y2="72" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          <line x1="0" y1="108" x2="600" y2="108" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          <path d="M0,128 C50,122 100,112 150,98 C200,84 240,106 280,82 C320,58 360,46 410,36 C450,28 490,32 540,18 L600,12 L600,145 L0,145Z" fill="url(#cg)"/>
+          <path d="M0,128 C50,122 100,112 150,98 C200,84 240,106 280,82 C320,58 360,46 410,36 C450,28 490,32 540,18 L600,12" fill="none" stroke="#00e5a0" stroke-width="2"/>
+          <circle cx="600" cy="12" r="4" fill="#00e5a0"/>
+        </svg>
+        <div class="chart-tip"><div style="font-size:8.5px;color:var(--muted);margin-bottom:1px">Today</div><div class="chart-tip-val">$4,218</div></div>
+      </div>
+      <div class="chart-lbl"><span>Jan 20</span><span>Feb 3</span><span>Feb 10</span><span>Feb 17</span><span>Today</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div><div class="ct">Earnings by Plan</div><div class="cs">Active plans</div></div></div>
+      <div class="earn-item"><div class="plan-dot" style="background:var(--bronze)"></div><div style="flex:1"><div style="font-size:11px;font-weight:500">Bronze</div><div style="font-size:8.5px;color:var(--muted)">$500 locked · 1.0%/day · 18 days left</div></div><div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--accent)">+$5.00</div><div style="font-size:8.5px;color:var(--muted)">/day</div></div></div>
+      <div class="earn-item"><div class="plan-dot" style="background:var(--gold)"></div><div style="flex:1"><div style="font-size:11px;font-weight:500">Gold</div><div style="font-size:8.5px;color:var(--muted)">$5,000 locked · 1.5%/day · 27 days left</div></div><div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--accent)">+$75.00</div><div style="font-size:8.5px;color:var(--muted)">/day</div></div></div>
+      <div style="background:rgba(255,77,109,0.05);border:1px solid rgba(255,77,109,0.15);border-radius:9px;padding:11px;margin-top:10px;">
+        <div style="font-size:8.5px;color:var(--red);font-weight:600;margin-bottom:4px">🔒 Invested capital is locked</div>
+        <div style="font-size:10px;color:var(--muted2);line-height:1.6">Your invested $5,500 is locked in active plans and released only at plan maturity. Only earnings credited to your wallet are withdrawable.</div>
+      </div>
+      <div style="background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.12);border-radius:9px;padding:11px;margin-top:9px;">
+        <div style="font-size:8.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px">Referral Bonus</div>
+        <div style="font-size:11px;">3 refs → <span style="color:var(--accent);font-family:'Syne',sans-serif;font-size:14px;font-weight:700">+$22.50</span>/day extra</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bot-grid">
+    <div class="card">
+      <div class="card-hd"><div><div class="ct">Active Investments</div><div class="cs">Capital locked until plan matures</div></div></div>
+      <table class="tbl">
+        <thead><tr><th>Plan</th><th>Amount</th><th>Daily</th><th>Matures</th><th>Progress</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge bg-bronze">Bronze</span></td><td>$500 <span style="font-size:8px;color:var(--red)">🔒</span></td><td class="text-green">+$5.00</td><td style="font-size:9px">Mar 10</td><td><div style="font-size:8px;color:var(--muted)">12/30</div><div class="prog" style="width:70px;margin-top:3px"><div class="prog-f" style="width:40%"></div></div></td></tr>
+          <tr><td><span class="badge bg-gold">Gold</span></td><td>$5,000 <span style="font-size:8px;color:var(--red)">🔒</span></td><td class="text-green">+$75.00</td><td style="font-size:9px">Mar 19</td><td><div style="font-size:8px;color:var(--muted)">18/45</div><div class="prog" style="width:70px;margin-top:3px"><div class="prog-f" style="width:40%"></div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div><div class="ct">Recent Transactions</div></div><button class="btn btn-g" style="font-size:8.5px;padding:4px 9px;" onclick="go('transactions',qni(9))">All</button></div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <div class="tx-item"><div class="tx-icon tx-ear">⚡</div><div class="tx-det"><div class="tx-t">Daily Earnings — Gold</div><div class="tx-d">Today, 00:00 UTC · To wallet</div></div><div class="tx-amt text-green">+$75.00</div></div>
+        <div class="tx-item"><div class="tx-icon tx-ref">⊕</div><div class="tx-det"><div class="tx-t">Referral Bonus</div><div class="tx-d">Today, 00:00 UTC · To wallet</div></div><div class="tx-amt text-green">+$22.50</div></div>
+        <div class="tx-item"><div class="tx-icon tx-wit">↑</div><div class="tx-det"><div class="tx-t">Withdrawal · BTC</div><div class="tx-d">Feb 10 · From wallet · Completed</div></div><div class="tx-amt text-red">−$1,200</div></div>
+        <div class="tx-item"><div class="tx-icon tx-dep">↓</div><div class="tx-det"><div class="tx-t">Deposit · Gold Plan</div><div class="tx-d">Feb 3 · Locked in plan</div></div><div class="tx-amt text-green">+$5,000</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     DEPOSIT
+════════════════════════════════════════ -->
+<div class="page" id="page-deposit">
+  <div class="ph"><div><div class="pt">Make a Deposit</div><div class="ps">Add funds to your wallet, then invest in a plan</div></div></div>
+  <div class="steps-bar">
+    <div class="stp done"><div class="stp-num">✓</div>Select Plan</div>
+    <div class="stp cur"><div class="stp-num">2</div>Choose Method</div>
+    <div class="stp"><div class="stp-num">3</div>Send Payment</div>
+    <div class="stp"><div class="stp-num">4</div>Confirmation</div>
+  </div>
+  <div class="dep-layout">
+    <div>
+      <div class="alert-box alert-blue" style="margin-bottom:16px;">
+        <span style="font-size:16px">ℹ️</span>
+        <div style="font-size:10px;color:var(--muted2);line-height:1.6"><strong style="color:var(--text)">How it works:</strong> First deposit funds to your wallet, then go to <strong>Invest</strong> to lock funds into a plan. Invested capital cannot be withdrawn — only daily earnings flow to your wallet.</div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-hd" style="margin-bottom:14px;"><div><div class="ct">Select Investment Plan</div><div class="cs">Which plan are you depositing for?</div></div></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;">
+          <div class="mc sel" onclick="selDepPlan(this,'Bronze','$100–$499')"><div class="mc-icon">🥉</div><div><div class="mc-name">Bronze</div><div class="mc-detail">$100–$499</div></div></div>
+          <div class="mc" onclick="selDepPlan(this,'Silver','$500–$1,999')"><div class="mc-icon">🥈</div><div><div class="mc-name">Silver</div><div class="mc-detail">$500–$1,999</div></div></div>
+          <div class="mc" onclick="selDepPlan(this,'Gold','$2,000–$4,999')"><div class="mc-icon">🥇</div><div><div class="mc-name">Gold</div><div class="mc-detail">$2K–$4.9K</div></div></div>
+          <div class="mc" onclick="selDepPlan(this,'Platinum','$5,000–$7,499')"><div class="mc-icon">💎</div><div><div class="mc-name">Platinum</div><div class="mc-detail">$5K–$7.5K</div></div></div>
+          <div class="mc" onclick="selDepPlan(this,'Diamond','$7,500–$9,999')"><div class="mc-icon">✨</div><div><div class="mc-name">Diamond</div><div class="mc-detail">$7.5K–$10K</div></div></div>
+          <div class="mc" onclick="selDepPlan(this,'Elite','$10,000+')"><div class="mc-icon">👑</div><div><div class="mc-name">Elite</div><div class="mc-detail">$10,000+</div></div></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-hd" style="margin-bottom:14px;"><div><div class="ct">Deposit Amount</div></div></div>
+        <div class="field"><label class="fl">Amount (USD)</label><input class="fi" type="number" placeholder="e.g. 500" id="dep-amount" oninput="calcDepFee()" style="font-size:20px;font-family:'Syne',sans-serif;font-weight:700;padding:14px;"/><div class="fh" id="dep-plan-hint">Selected plan: Bronze ($100–$499)</div></div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">
+          <button class="qb" onclick="setDepAmt(100)">$100</button>
+          <button class="qb" onclick="setDepAmt(500)">$500</button>
+          <button class="qb" onclick="setDepAmt(1000)">$1,000</button>
+          <button class="qb" onclick="setDepAmt(5000)">$5,000</button>
+          <button class="qb" onclick="setDepAmt(10000)">$10,000</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-hd" style="margin-bottom:14px;"><div><div class="ct">Payment Method</div><div class="cs">Choose how to send funds</div></div></div>
+        <div class="method-grid">
+          <div class="mc sel" onclick="selDepMethod(this,'btc','Bitcoin')"><div class="mc-icon">₿</div><div><div class="mc-name">Bitcoin</div><div class="mc-detail">Network fee ~$2</div></div></div>
+          <div class="mc" onclick="selDepMethod(this,'usdt','USDT TRC-20')"><div class="mc-icon">💲</div><div><div class="mc-name">USDT TRC-20</div><div class="mc-detail">Recommended · ~$1</div></div></div>
+          <div class="mc" onclick="selDepMethod(this,'eth','Ethereum')"><div class="mc-icon">⟠</div><div><div class="mc-name">Ethereum</div><div class="mc-detail">Gas fee ~$5</div></div></div>
+          <div class="mc" onclick="selDepMethod(this,'bank','Bank Transfer')"><div class="mc-icon">🏦</div><div><div class="mc-name">Bank Transfer</div><div class="mc-detail">1-3 biz days</div></div></div>
+        </div>
+      </div>
+
+      <!-- CRYPTO PAYMENT ADDRESS -->
+      <div class="card" id="crypto-pay-panel" style="margin-bottom:14px;">
+        <div class="card-hd" style="margin-bottom:14px;"><div><div class="ct">Send Payment</div><div class="cs" id="crypto-method-label">Send Bitcoin to this address</div></div></div>
+        <div class="crypto-address">
+          <div class="qr-placeholder">📱</div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px">Scan QR or copy address below</div>
+          <div class="wallet-addr" id="dep-wallet-addr" onclick="copyAddr()" title="Click to copy">
+            bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq
+          </div>
+          <div style="font-size:9px;color:var(--muted);margin-top:8px">⚠ Send only <strong id="dep-coin-label">BTC</strong> to this address. Wrong network = permanent loss.</div>
+        </div>
+        <div style="background:var(--surf2);border-radius:10px;padding:14px;margin-top:12px;">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Payment Summary</div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:8px;"><span class="text-muted">You Send</span><span id="dep-you-send" style="font-weight:600">—</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:8px;"><span class="text-muted">Network Fee</span><span class="text-red" id="dep-fee">—</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;border-top:1px solid var(--border);padding-top:8px;"><span class="text-muted">Credited to Wallet</span><span class="text-green" id="dep-credited" style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700">—</span></div>
+        </div>
+        <div class="field" style="margin-top:14px;"><label class="fl">Transaction Hash / Reference (optional)</label><input class="fi" placeholder="Paste your TX hash after sending..." /></div>
+        <button class="btn btn-p btn-lg btn-bl" onclick="confirmDeposit()">I Have Sent Payment →</button>
+      </div>
+
+      <!-- BANK PAYMENT DETAILS -->
+      <div class="card" id="bank-pay-panel" style="display:none;margin-bottom:14px;">
+        <div class="card-hd" style="margin-bottom:14px;"><div><div class="ct">Bank Transfer Details</div><div class="cs">Use exact reference number</div></div></div>
+        <div style="background:var(--surf2);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;"><span class="text-muted">Bank Name</span><span style="font-weight:600">VaultX Finance Ltd</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;"><span class="text-muted">Account Number</span><span style="font-weight:600">4821 0044 2200</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;"><span class="text-muted">Sort Code</span><span style="font-weight:600">20-41-88</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;"><span class="text-muted">SWIFT / BIC</span><span style="font-weight:600">VLTXGB2L</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;border-top:1px solid var(--border);padding-top:10px;"><span class="text-muted">Your Reference</span><span style="font-weight:700;color:var(--accent)">VX-AMARA-2026</span></div>
+        </div>
+        <div class="alert-box alert-warn" style="margin-top:12px;"><span>⚠️</span><div style="font-size:9.5px;color:var(--muted2)">Always include your exact reference code. Missing reference = delayed crediting. Allow 1–3 business days.</div></div>
+        <button class="btn btn-p btn-lg btn-bl" onclick="confirmDeposit()">I Have Made the Transfer →</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="info-side" style="margin-bottom:14px;">
+        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:16px">Deposit Info</div>
+        <div class="info-item"><div class="ii-icon tx-dep">⚡</div><div><div style="font-size:10.5px;font-weight:600;margin-bottom:3px">Instant Credit</div><div style="font-size:9.5px;color:var(--muted2);line-height:1.6">Crypto deposits are credited within 3 network confirmations (usually minutes).</div></div></div>
+        <div class="info-item"><div class="ii-icon tx-ear">🔒</div><div><div style="font-size:10.5px;font-weight:600;margin-bottom:3px">Deposited = Invested</div><div style="font-size:9.5px;color:var(--muted2);line-height:1.6">Funds deposited directly into a plan are locked. Only earnings flow to your withdrawable wallet.</div></div></div>
+        <div class="info-item"><div class="ii-icon tx-ref">📋</div><div><div style="font-size:10.5px;font-weight:600;margin-bottom:3px">Minimum Deposit</div><div style="font-size:9.5px;color:var(--muted2);line-height:1.6">$100 minimum per plan. Deposits below minimum are returned minus network fees.</div></div></div>
+        <div class="info-item" style="margin-bottom:0"><div class="ii-icon tx-wit">🛡</div><div><div style="font-size:10.5px;font-weight:600;margin-bottom:3px">KYC for Large Deposits</div><div style="font-size:9.5px;color:var(--muted2);line-height:1.6">Deposits over $5,000 require KYC verification. Complete it in the KYC section.</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div><div class="ct">Recent Deposits</div></div></div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div class="tx-item"><div class="tx-icon tx-dep">↓</div><div class="tx-det"><div class="tx-t">Gold Plan Deposit</div><div class="tx-d">Feb 3 · BTC · Confirmed</div></div><div class="tx-amt text-green">+$5,000</div></div>
+          <div class="tx-item"><div class="tx-icon tx-dep">↓</div><div class="tx-det"><div class="tx-t">Bronze Plan Deposit</div><div class="tx-d">Jan 8 · USDT · Confirmed</div></div><div class="tx-amt text-green">+$500</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     WITHDRAW — EARNINGS ONLY
+════════════════════════════════════════ -->
+<div class="page" id="page-withdraw">
+  <div class="ph"><div><div class="pt">Withdraw Funds</div><div class="ps">Only wallet earnings are withdrawable. Invested capital is locked.</div></div></div>
+  <div class="steps-bar">
+    <div class="stp done"><div class="stp-num">✓</div>Amount</div>
+    <div class="stp cur"><div class="stp-num">2</div>Method</div>
+    <div class="stp"><div class="stp-num">3</div>Confirm</div>
+    <div class="stp"><div class="stp-num">4</div>Done</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 310px;gap:18px;" class="w-layout">
+    <div>
+      <!-- Balance Breakdown -->
+      <div class="balance-breakdown">
+        <div class="bal-card bal-available">
+          <div class="bal-lbl">✅ Available to Withdraw</div>
+          <div class="bal-val text-green">$4,218.50</div>
+          <div class="bal-note">This is your wallet balance — earnings credited daily from active plans + referral bonuses.</div>
+        </div>
+        <div class="bal-card bal-locked">
+          <div class="bal-lbl">🔒 Locked (Not Withdrawable)</div>
+          <div class="bal-val text-red">$5,500.00</div>
+          <div class="bal-note">Invested capital. Released automatically when each plan matures.</div>
+        </div>
+      </div>
+
+      <div class="locked-breakdown card" style="margin-bottom:16px;">
+        <div class="card-hd" style="margin-bottom:12px;"><div><div class="ct">Locked Capital Breakdown</div><div class="cs">Releases at plan maturity — not before</div></div></div>
+        <div class="lock-item">
+          <span><span class="badge bg-bronze">Bronze</span> $500 locked</span>
+          <span style="font-size:9.5px;color:var(--muted2)">Matures Mar 10 · 18 days</span>
+          <span class="badge bg-red">Locked 🔒</span>
+        </div>
+        <div class="lock-item">
+          <span><span class="badge bg-gold">Gold</span> $5,000 locked</span>
+          <span style="font-size:9.5px;color:var(--muted2)">Matures Mar 19 · 27 days</span>
+          <span class="badge bg-red">Locked 🔒</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:11px 12px;background:rgba(0,229,160,0.05);border-radius:8px;border:1px solid rgba(0,229,160,0.12);margin-top:4px;font-size:10.5px;">
+          <span>When plans mature, principal + remaining returns credited to wallet</span>
+          <span class="text-green" style="font-weight:600;white-space:nowrap;">$5,500 + returns</span>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-hd" style="margin-bottom:14px;"><div><div class="ct">Withdrawal Amount</div><div class="cs">From your $4,218.50 wallet balance</div></div></div>
+        <div class="field"><label class="fl">Amount USD</label><input class="fi" type="number" placeholder="0.00" value="500" id="with-amount" oninput="calcWithFee()" style="font-size:20px;font-family:'Syne',sans-serif;font-weight:700;padding:14px;"/><div class="fh">Min $10 · Max $4,218.50 · KYC required for >$500</div></div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">
+          <button class="qb" onclick="setWithAmt(50)">$50</button>
+          <button class="qb sel" onclick="setWithAmt(500)">$500</button>
+          <button class="qb" onclick="setWithAmt(1000)">$1,000</button>
+          <button class="qb" onclick="setWithAmt(2000)">$2,000</button>
+          <button class="qb" onclick="setWithAmt(4218.5)">Max</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-hd" style="margin-bottom:14px;"><div><div class="ct">Withdrawal Method</div></div></div>
+        <div class="method-grid">
+          <div class="mc sel" onclick="selMC(this)"><div class="mc-icon">₿</div><div><div class="mc-name">Bitcoin</div><div class="mc-detail">Fee $2 · 1-3 hrs</div></div></div>
+          <div class="mc" onclick="selMC(this)"><div class="mc-icon">💲</div><div><div class="mc-name">USDT TRC-20</div><div class="mc-detail">Fee $1 · Instant</div></div></div>
+          <div class="mc" onclick="selMC(this)"><div class="mc-icon">⟠</div><div><div class="mc-name">Ethereum</div><div class="mc-detail">Gas ~$5 · 2 hrs</div></div></div>
+          <div class="mc" onclick="selMC(this)"><div class="mc-icon">🏦</div><div><div class="mc-name">Bank Transfer</div><div class="mc-detail">1% · 1-3 days</div></div></div>
+        </div>
+        <div class="field"><label class="fl">Wallet Address / Bank Details</label><input class="fi" type="text" value="bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq" /><div class="fh">⚠ Double-check before confirming. Crypto withdrawals cannot be reversed.</div></div>
+        <div class="field"><label class="fl">2FA Code (required for withdrawals)</label><input class="fi" type="text" placeholder="6-digit code from your auth app" maxlength="6"/></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd" style="margin-bottom:14px;"><div><div class="ct">Withdrawal Summary</div></div></div>
+        <div style="background:var(--surf2);border-radius:10px;padding:14px;margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:8px;"><span class="text-muted">Withdrawal Amount</span><span id="w-amt">$500.00</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:8px;"><span class="text-muted">Network Fee</span><span class="text-red" id="w-fee">−$2.00</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:8px;"><span class="text-muted">Platform Fee</span><span class="text-green">$0.00</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;border-top:1px solid var(--border);padding-top:9px;"><span style="font-weight:600">You Receive</span><span id="w-net" style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--accent)">$498.00</span></div>
+        </div>
+        <div style="display:flex;gap:9px;"><button class="btn btn-g" style="flex:1">Save Draft</button><button class="btn btn-p" style="flex:2;padding:13px;" onclick="confirmWithdraw()">Confirm Withdrawal →</button></div>
+        <div style="font-size:8.5px;color:var(--muted);text-align:center;margin-top:9px;line-height:1.6">Processed within 24 hours · KYC required for >$500 · Daily limit: $10,000</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="info-side" style="margin-bottom:14px;">
+        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:16px">Important Rules</div>
+        <div class="alert-box alert-red" style="margin-bottom:14px;"><span>🔒</span><div style="font-size:9.5px;color:var(--muted2);line-height:1.5"><strong style="color:var(--red)">Invested capital is NOT withdrawable</strong> until the plan matures. You can only withdraw earnings credited to your wallet.</div></div>
+        <div class="info-item"><div class="ii-icon tx-ear">⚡</div><div><div style="font-size:10.5px;font-weight:600;margin-bottom:3px">What's Withdrawable</div><div style="font-size:9.5px;color:var(--muted2);line-height:1.6">Daily earnings + referral bonuses credited to wallet balance.</div></div></div>
+        <div class="info-item"><div class="ii-icon tx-ref">🛡</div><div><div style="font-size:10.5px;font-weight:600;margin-bottom:3px">Security Review</div><div style="font-size:9.5px;color:var(--muted2);line-height:1.6">Amounts over $5,000 undergo manual review (up to 48 hrs).</div></div></div>
+        <div class="info-item" style="margin-bottom:0"><div class="ii-icon tx-wit">📋</div><div><div style="font-size:10.5px;font-weight:600;margin-bottom:3px">Daily Limit</div><div style="font-size:9.5px;color:var(--muted2);line-height:1.6">$10,000/day for verified users. Elite members: unlimited.</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div><div class="ct">Recent Withdrawals</div></div></div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div class="tx-item"><div class="tx-icon tx-wit">↑</div><div class="tx-det"><div class="tx-t">BTC Withdrawal</div><div class="tx-d">Feb 10 · ✅ Completed</div></div><div class="tx-amt text-red">−$1,200</div></div>
+          <div class="tx-item"><div class="tx-icon tx-wit">↑</div><div class="tx-det"><div class="tx-t">USDT Withdrawal</div><div class="tx-d">Jan 28 · ✅ Completed</div></div><div class="tx-amt text-red">−$800</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     INVEST
+════════════════════════════════════════ -->
+<div class="page" id="page-invest">
+  <div class="ph"><div><div class="pt">Investment Plans</div><div class="ps">Select a plan · Capital is locked until maturity · Earnings credited daily</div></div></div>
+  <div class="alert-box alert-blue" style="margin-bottom:18px;"><span>ℹ️</span><div style="font-size:10px;color:var(--muted2);line-height:1.6"><strong style="color:var(--text)">Remember:</strong> Once you invest, your capital is <strong>locked</strong> until the plan matures. You cannot withdraw the invested amount early. Daily earnings are credited to your wallet and are immediately withdrawable.</div></div>
+  <div class="plans-grid">
+    <div class="plan-card" id="pc-bronze" onclick="selPlan('bronze','$100–$499',1.0,30)"><div class="plan-icon">🥉</div><div class="plan-name" style="color:var(--bronze)">Bronze</div><div class="plan-range">$100–$499 · 30 days</div><div class="plan-roi" style="color:var(--bronze)">1.0%</div><div class="plan-roi-sub">daily return · 30% total</div><ul class="plan-feats"><li><span class="ck">✓</span>Daily earnings to wallet</li><li><span class="ck">✓</span>5% referral commission</li><li><span class="no">✗</span><span style="opacity:.5">Auto-compound</span></li></ul><button class="plan-btn" id="pb-bronze">Select Bronze</button></div>
+    <div class="plan-card" id="pc-silver" onclick="selPlan('silver','$500–$1,999',1.2,30)"><div class="plan-icon">🥈</div><div class="plan-name" style="color:var(--silver)">Silver</div><div class="plan-range">$500–$1,999 · 30 days</div><div class="plan-roi" style="color:var(--silver)">1.2%</div><div class="plan-roi-sub">daily return · 36% total</div><ul class="plan-feats"><li><span class="ck">✓</span>Daily earnings to wallet</li><li><span class="ck">✓</span>5% referral commission</li><li><span class="ck">✓</span>Optional compound</li></ul><button class="plan-btn" id="pb-silver">Select Silver</button></div>
+    <div class="plan-card" id="pc-gold" onclick="selPlan('gold','$2,000–$4,999',1.5,45)"><div class="hot-tag" style="background:var(--accent);color:#000">Popular</div><div class="plan-icon">🥇</div><div class="plan-name" style="color:var(--gold)">Gold</div><div class="plan-range">$2,000–$4,999 · 45 days</div><div class="plan-roi" style="color:var(--gold)">1.5%</div><div class="plan-roi-sub">daily return · 67.5% total</div><ul class="plan-feats"><li><span class="ck">✓</span>Daily earnings to wallet</li><li><span class="ck">✓</span>7% referral commission</li><li><span class="ck">✓</span>Auto-compound available</li></ul><button class="plan-btn" id="pb-gold">Select Gold</button></div>
+    <div class="plan-card" id="pc-platinum" onclick="selPlan('platinum','$5,000–$7,499',1.8,45)"><div class="plan-icon">💎</div><div class="plan-name" style="color:var(--plat)">Platinum</div><div class="plan-range">$5,000–$7,499 · 45 days</div><div class="plan-roi" style="color:var(--plat)">1.8%</div><div class="plan-roi-sub">daily return · 81% total</div><ul class="plan-feats"><li><span class="ck">✓</span>Daily earnings to wallet</li><li><span class="ck">✓</span>8% referral commission</li><li><span class="ck">✓</span>Auto-compound</li></ul><button class="plan-btn" id="pb-platinum">Select Platinum</button></div>
+    <div class="plan-card" id="pc-diamond" onclick="selPlan('diamond','$7,500–$9,999',2.0,60)"><div class="plan-icon">✨</div><div class="plan-name" style="color:var(--diamond)">Diamond</div><div class="plan-range">$7,500–$9,999 · 60 days</div><div class="plan-roi" style="color:var(--diamond)">2.0%</div><div class="plan-roi-sub">daily return · 120% total</div><ul class="plan-feats"><li><span class="ck">✓</span>Daily earnings to wallet</li><li><span class="ck">✓</span>10% referral commission</li><li><span class="ck">✓</span>Auto-compound</li></ul><button class="plan-btn" id="pb-diamond">Select Diamond</button></div>
+    <div class="plan-card" id="pc-elite" onclick="selPlan('elite','$10,000+',2.5,60)"><div class="hot-tag" style="background:var(--elite);color:#000">Premium</div><div class="plan-icon">👑</div><div class="plan-name" style="color:var(--elite)">Elite</div><div class="plan-range">$10,000+ · 60 days</div><div class="plan-roi" style="color:var(--elite)">2.5%</div><div class="plan-roi-sub">daily return · 150% total</div><ul class="plan-feats"><li><span class="ck">✓</span>Daily earnings to wallet</li><li><span class="ck">✓</span>12% referral commission</li><li><span class="ck">✓</span>Unlimited withdrawals</li></ul><button class="plan-btn" id="pb-elite">Select Elite</button></div>
+  </div>
+
+  <div class="drawer" id="inv-drawer">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div><div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700">Invest in <span id="dp-n" style="color:var(--accent)">Gold</span> Plan</div><div style="font-size:9.5px;color:var(--muted);margin-top:2px">Range: <span id="dp-r">$2K–$4.9K</span> · <span id="dp-roi">1.5%</span>/day · <span id="dp-d">45</span> days</div></div>
+      <button class="btn btn-g" onclick="closeDr()">✕</button>
+    </div>
+    <div class="alert-box alert-red" style="margin-bottom:16px;"><span>⚠️</span><div style="font-size:9.5px;color:var(--muted2);line-height:1.5">Capital invested here is <strong style="color:var(--red)">locked until plan matures</strong>. Only daily earnings (credited to your wallet) can be withdrawn during the plan period.</div></div>
+    <div class="drawer-grid">
+      <div>
+        <div class="field"><label class="fl">Investment Amount (USD)</label><input class="fi" type="number" id="inv-amt" placeholder="Amount..." oninput="calcROI()"/><div class="fh">Wallet balance: $4,218.50</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;"><button class="qb" onclick="sIA(500)">$500</button><button class="qb" onclick="sIA(1000)">$1K</button><button class="qb" onclick="sIA(5000)">$5K</button><button class="qb" onclick="sIA(10000)">$10K</button></div></div>
+        <div class="field"><label class="fl">Fund From</label><select class="fi"><option>💰 Wallet Balance ($4,218.50)</option><option>📤 New Deposit (go to Deposit page)</option></select></div>
+        <div class="field"><label class="fl">Earnings Mode</label><select class="fi"><option>💸 Credit to wallet daily (withdrawable immediately)</option><option>🔄 Auto-compound into plan (higher total return)</option></select></div>
+      </div>
+      <div>
+        <div style="margin-bottom:10px;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Returns Preview</div>
+        <div class="roi-box">
+          <div class="roi-row"><span class="lbl">Capital (locked)</span><span id="ri-p" class="text-red">$0.00 🔒</span></div>
+          <div class="roi-row"><span class="lbl">Daily Rate</span><span id="ri-r" class="text-green">—</span></div>
+          <div class="roi-row"><span class="lbl">Daily Earnings (to wallet)</span><span id="ri-de" class="text-green">$0.00</span></div>
+          <div class="roi-row"><span class="lbl">Duration</span><span id="ri-d">— days</span></div>
+          <div class="roi-row"><span class="lbl">Total Earnings</span><span id="ri-te" class="text-green">$0.00</span></div>
+          <div class="roi-row roi-total-row"><span class="lbl">Total Payout at Maturity</span><span id="ri-tp" class="val">$0.00</span></div>
+          <div style="margin-top:10px;background:rgba(0,229,160,0.05);padding:10px;border-radius:8px;font-size:9.5px;color:var(--muted2);line-height:1.5">Principal released + all remaining earnings paid out at maturity.</div>
+        </div>
+        <button class="btn btn-p btn-lg btn-bl" style="margin-top:12px;" onclick="confirmInv()">Lock & Invest →</button>
+        <div style="font-size:8.5px;color:var(--muted);text-align:center;margin-top:7px;line-height:1.5">Capital is locked immediately. Earnings start next day at 00:00 UTC.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd"><div><div class="ct">Plan Comparison</div><div class="cs">Capital locked for plan duration · Daily earnings always withdrawable</div></div></div>
+    <table class="tbl">
+      <thead><tr><th>Plan</th><th>Min</th><th>Daily</th><th>Duration</th><th>Total ROI</th><th>Ref %</th><th>Lock Period</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge bg-bronze">🥉 Bronze</span></td><td>$100</td><td>1.0%</td><td>30d</td><td class="text-green">30%</td><td>5%</td><td class="text-red" style="font-size:9px">30 days 🔒</td></tr>
+        <tr><td><span class="badge bg-silver">🥈 Silver</span></td><td>$500</td><td>1.2%</td><td>30d</td><td class="text-green">36%</td><td>5%</td><td class="text-red" style="font-size:9px">30 days 🔒</td></tr>
+        <tr><td><span class="badge bg-gold">🥇 Gold</span></td><td>$2,000</td><td>1.5%</td><td>45d</td><td class="text-green">67.5%</td><td>7%</td><td class="text-red" style="font-size:9px">45 days 🔒</td></tr>
+        <tr><td><span class="badge bg-blue">💎 Platinum</span></td><td>$5,000</td><td>1.8%</td><td>45d</td><td class="text-green">81%</td><td>8%</td><td class="text-red" style="font-size:9px">45 days 🔒</td></tr>
+        <tr><td><span class="badge bg-green">✨ Diamond</span></td><td>$7,500</td><td>2.0%</td><td>60d</td><td class="text-green">120%</td><td>10%</td><td class="text-red" style="font-size:9px">60 days 🔒</td></tr>
+        <tr><td><span class="badge bg-purple">👑 Elite</span></td><td>$10,000</td><td>2.5%</td><td>60d</td><td class="text-green">150%</td><td>12%</td><td class="text-red" style="font-size:9px">60 days 🔒</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PORTFOLIO
+════════════════════════════════════════ -->
+<div class="page" id="page-portfolio">
+  <div class="ph"><div><div class="pt">My Portfolio</div><div class="ps">Full investment breakdown, performance & calendar</div></div><button class="btn btn-p" onclick="go('invest',qni(2))">＋ Invest More</button></div>
+  <div class="grid4" style="margin-bottom:20px;">
+    <div class="sc hl"><div class="sc-lbl">Wallet Balance</div><div class="sc-val text-green">$4,218</div><div class="sc-meta">Withdrawable earnings</div></div>
+    <div class="sc"><div class="sc-lbl">Capital Locked</div><div class="sc-val text-red">$5,500</div><div class="sc-meta">🔒 Released at maturity</div></div>
+    <div class="sc"><div class="sc-lbl">Total Earned</div><div class="sc-val text-green">$4,218</div><div class="sc-meta">Lifetime earnings</div></div>
+    <div class="sc"><div class="sc-lbl">Est. Monthly</div><div class="sc-val">$2,460</div><div class="sc-meta">At current rates</div></div>
+  </div>
+  <div class="mid-grid" style="margin-bottom:20px;">
+    <div class="card">
+      <div class="card-hd"><div><div class="ct">Plan Performance</div><div class="cs">Active investments</div></div></div>
+      <table class="tbl">
+        <thead><tr><th>Plan</th><th>Locked</th><th>Daily Earn</th><th>Earned So Far</th><th>Matures</th><th>Progress</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge bg-bronze">Bronze</span></td><td class="text-red">$500 🔒</td><td class="text-green">+$5.00</td><td class="text-green">$60.00</td><td style="font-size:9px">Mar 10</td><td><div style="font-size:8.5px;color:var(--muted)">12/30d</div><div class="prog" style="width:80px;margin-top:3px"><div class="prog-f" style="width:40%"></div></div></td></tr>
+          <tr><td><span class="badge bg-gold">Gold</span></td><td class="text-red">$5,000 🔒</td><td class="text-green">+$75.00</td><td class="text-green">$1,275</td><td style="font-size:9px">Mar 19</td><td><div style="font-size:8.5px;color:var(--muted)">17/45d</div><div class="prog" style="width:80px;margin-top:3px"><div class="prog-f" style="width:38%"></div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div><div class="ct">Earnings Calendar</div><div class="cs">Feb 2026</div></div></div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;">
+        <div style="font-size:8px;color:var(--muted);padding:3px">Su</div><div style="font-size:8px;color:var(--muted);padding:3px">Mo</div><div style="font-size:8px;color:var(--muted);padding:3px">Tu</div><div style="font-size:8px;color:var(--muted);padding:3px">We</div><div style="font-size:8px;color:var(--muted);padding:3px">Th</div><div style="font-size:8px;color:var(--muted);padding:3px">Fr</div><div style="font-size:8px;color:var(--muted);padding:3px">Sa</div>
+        <div style="padding:3px;opacity:.3;font-size:9px">26</div><div style="padding:3px;opacity:.3;font-size:9px">27</div><div style="padding:3px;opacity:.3;font-size:9px">28</div><div style="padding:3px;opacity:.3;font-size:9px">29</div><div style="padding:3px;opacity:.3;font-size:9px">30</div><div style="padding:3px;opacity:.3;font-size:9px">31</div><div class="cal-day earned">1</div>
+        <div class="cal-day earned">2</div><div class="cal-day earned">3</div><div class="cal-day earned">4</div><div class="cal-day earned">5</div><div class="cal-day earned">6</div><div class="cal-day earned">7</div><div class="cal-day earned">8</div>
+        <div class="cal-day earned">9</div><div class="cal-day earned">10</div><div class="cal-day earned">11</div><div class="cal-day earned">12</div><div class="cal-day earned">13</div><div class="cal-day earned">14</div><div class="cal-day earned">15</div>
+        <div class="cal-day earned">16</div><div class="cal-day earned">17</div><div class="cal-day earned">18</div><div class="cal-day earned">19</div><div class="cal-day today">20</div><div class="cal-day future">21</div><div class="cal-day future">22</div>
+        <div class="cal-day future">23</div><div class="cal-day future">24</div><div class="cal-day future">25</div><div class="cal-day future">26</div><div class="cal-day future">27</div><div class="cal-day future">28</div>
+      </div>
+    </div>
+  </div>
+  <div class="bot-grid">
+    <div class="card">
+      <div class="card-hd"><div><div class="ct">Quick Stats</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;padding:10px;background:var(--surf2);border-radius:8px;font-size:10.5px;"><span class="text-muted">Best Day Earning</span><span class="text-green" style="font-weight:600">$102.50</span></div>
+        <div style="display:flex;justify-content:space-between;padding:10px;background:var(--surf2);border-radius:8px;font-size:10.5px;"><span class="text-muted">Avg. Daily Earnings</span><span style="font-weight:600">$83.20</span></div>
+        <div style="display:flex;justify-content:space-between;padding:10px;background:var(--surf2);border-radius:8px;font-size:10.5px;"><span class="text-muted">Days Active</span><span style="font-weight:600">47 days</span></div>
+        <div style="display:flex;justify-content:space-between;padding:10px;background:var(--surf2);border-radius:8px;font-size:10.5px;"><span class="text-muted">Referral Earnings</span><span class="text-green" style="font-weight:600">$482.00</span></div>
+        <div style="display:flex;justify-content:space-between;padding:10px;background:var(--surf2);border-radius:8px;font-size:10.5px;"><span class="text-muted">Total Withdrawn</span><span style="font-weight:600">$4,200</span></div>
+        <div style="display:flex;justify-content:space-between;padding:10px;background:rgba(255,77,109,0.05);border-radius:8px;font-size:10.5px;border:1px solid rgba(255,77,109,0.12)"><span class="text-muted">Capital Locked</span><span class="text-red" style="font-weight:600">$5,500 🔒</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div><div class="ct">Allocation</div><div class="cs">Where your money sits</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+        <div><div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:5px;"><span>Wallet Balance (withdrawable)</span><span class="text-green">$4,218 · 43.4%</span></div><div class="prog"><div class="prog-f" style="width:43.4%;background:var(--accent)"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:5px;"><span>Gold Plan (locked)</span><span class="text-gold">$5,000 · 51.4%</span></div><div class="prog"><div class="prog-f" style="width:51.4%;background:var(--gold)"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:5px;"><span>Bronze Plan (locked)</span><span style="color:var(--bronze)">$500 · 5.1%</span></div><div class="prog"><div class="prog-f" style="width:5.1%;background:var(--bronze)"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     KYC
+════════════════════════════════════════ -->
+<div class="page" id="page-kyc">
+  <div class="ph"><div><div class="pt">KYC Verification</div><div class="ps">Identity verification required for full platform access</div></div><span class="badge bg-warn" style="font-size:10px;padding:6px 12px;">Pending</span></div>
+  <div class="kyc-steps">
+    <div class="ks done"><div class="ks-c">✓</div><div class="ks-lbl">Email</div></div>
+    <div class="ks done"><div class="ks-c">✓</div><div class="ks-lbl">Phone</div></div>
+    <div class="ks cur"><div class="ks-c">3</div><div class="ks-lbl">ID Doc</div></div>
+    <div class="ks"><div class="ks-c">4</div><div class="ks-lbl">Selfie</div></div>
+    <div class="ks"><div class="ks-c">5</div><div class="ks-lbl">Review</div></div>
+    <div class="ks"><div class="ks-c">6</div><div class="ks-lbl">Approved</div></div>
+  </div>
+  <div style="max-width:580px;margin:0 auto;">
+    <div class="grid2" style="margin-bottom:14px;">
+      <div class="card bal-locked" style="border-color:rgba(255,77,109,0.18)"><div style="font-size:9px;color:var(--muted2);margin-bottom:4px">Without KYC</div><div style="font-size:13px;font-weight:600;color:var(--red)">$500/day limit</div><div style="font-size:9px;color:var(--muted);margin-top:3px">Withdraw cap · Plans up to Gold only</div></div>
+      <div class="card" style="background:rgba(0,229,160,0.04);border-color:rgba(0,229,160,0.18)"><div style="font-size:9px;color:var(--muted2);margin-bottom:4px">With KYC ✓</div><div style="font-size:13px;font-weight:600;color:var(--accent)">Unlimited</div><div style="font-size:9px;color:var(--muted);margin-top:3px">All plans · Full withdrawals</div></div>
+    </div>
+    <div class="card" style="margin-bottom:14px;">
+      <div class="card-hd" style="margin-bottom:14px;"><div><div class="ct">Step 3 — Upload ID Document</div><div class="cs">Government-issued photo ID</div></div></div>
+      <div class="field"><label class="fl">Document Type</label><select class="fi"><option>National ID Card</option><option>Passport</option><option>Driver's Licence</option><option>Residence Permit</option></select></div>
+      <div class="field"><label class="fl">Issuing Country</label><select class="fi"><option>Kenya</option><option>Nigeria</option><option>Ghana</option><option>South Africa</option><option>United Kingdom</option><option>United States</option></select></div>
+      <div class="grid2" style="margin-bottom:14px;">
+        <div><div class="fl" style="margin-bottom:7px">Front</div><div class="upload-zone" onclick="simUpload(this,'front')"><div style="font-size:32px;margin-bottom:8px">📄</div><div style="font-size:11px;font-weight:600">Upload Front</div><div style="font-size:9px;color:var(--muted);margin-top:3px">JPG/PNG/PDF · Max 5MB</div></div></div>
+        <div><div class="fl" style="margin-bottom:7px">Back</div><div class="upload-zone" onclick="simUpload(this,'back')"><div style="font-size:32px;margin-bottom:8px">📄</div><div style="font-size:11px;font-weight:600">Upload Back</div><div style="font-size:9px;color:var(--muted);margin-top:3px">JPG/PNG/PDF · Max 5MB</div></div></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label class="fl">Legal First Name</label><input class="fi" value="Amara"/></div>
+        <div class="field"><label class="fl">Legal Last Name</label><input class="fi" value="Kone"/></div>
+        <div class="field"><label class="fl">Date of Birth</label><input class="fi" type="date" value="1990-05-14"/></div>
+        <div class="field"><label class="fl">ID Number</label><input class="fi" placeholder="A12345678"/></div>
+      </div>
+      <div style="display:flex;gap:10px;"><button class="btn btn-g" style="flex:1">Save Draft</button><button class="btn btn-p" style="flex:2;padding:12px;" onclick="alert('✅ Documents submitted! You\'ll be notified within 24-48 hours.')">Submit for Review →</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     REFERRALS
+════════════════════════════════════════ -->
+<div class="page" id="page-referrals">
+  <div class="ph"><div><div class="pt">Referral Program</div><div class="ps">Earn commissions on your referrals' daily returns — forever</div></div><button class="btn btn-p">📤 Share Link</button></div>
+  <div style="background:linear-gradient(135deg,#090f0d,#070c12);border:1px solid rgba(0,229,160,0.12);border-radius:16px;padding:28px 32px;margin-bottom:22px;display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden;">
+    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700">Invite friends. <span style="color:var(--accent)">Earn daily.</span> 💸</div>
+    <div style="font-size:10.5px;color:var(--muted2);line-height:1.7;max-width:440px">Every time a referral earns a daily return, you automatically receive a commission. Rate scales with their plan tier.</div>
+    <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;">
+      <input style="flex:1;min-width:200px;padding:10px 14px;background:var(--surf);border:1px solid var(--border2);border-radius:8px;color:var(--accent);font-size:10.5px;font-family:'DM Mono',monospace;outline:none;" value="https://vaultx.io/ref/AMARA2026" readonly/>
+      <button class="btn btn-p" onclick="navigator.clipboard?.writeText('https://vaultx.io/ref/AMARA2026');this.textContent='✓ Copied'">Copy</button>
+    </div>
+  </div>
+  <div class="grid4" style="margin-bottom:22px;">
+    <div class="sc"><div class="sc-lbl">Total Referrals</div><div class="sc-val">12</div></div>
+    <div class="sc"><div class="sc-lbl">Active Investors</div><div class="sc-val text-green">3</div></div>
+    <div class="sc hl"><div class="sc-lbl">Earned Today</div><div class="sc-val text-green">$33.20</div></div>
+    <div class="sc"><div class="sc-lbl">All-Time Earnings</div><div class="sc-val">$482</div></div>
+  </div>
+  <div class="bot-grid">
+    <div class="card">
+      <div class="card-hd"><div><div class="ct">Your Referrals</div><div class="cs">3 active · 9 signed up only</div></div></div>
+      <table class="tbl">
+        <thead><tr><th>User</th><th>Plan</th><th>Commission/day</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>James M.</td><td><span class="badge bg-gold">Gold</span></td><td class="text-green">+$10.00</td><td><span class="tag bg-green">Active</span></td></tr>
+          <tr><td>Sara O.</td><td><span class="badge bg-green">Diamond</span></td><td class="text-green">+$16.00</td><td><span class="tag bg-green">Active</span></td></tr>
+          <tr><td>Tom K.</td><td><span class="badge bg-blue">Platinum</span></td><td class="text-green">+$7.20</td><td><span class="tag bg-green">Active</span></td></tr>
+          <tr><td>Maria P.</td><td>—</td><td class="text-muted">$0</td><td><span class="tag bg-muted">Inactive</span></td></tr>
+          <tr><td>Ahmed N.</td><td>—</td><td class="text-muted">$0</td><td><span class="tag bg-muted">Inactive</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div><div class="ct">Commission Tiers</div><div class="cs">Scales with referral's plan</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:11px;background:var(--surf2);border-radius:9px;"><span style="font-size:16px">🥉</span><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--bronze)">Bronze/Silver</div><div style="font-size:9px;color:var(--muted)">Referral on tier 1-2</div></div><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--accent)">5%</div></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:11px;background:var(--surf2);border-radius:9px;"><span style="font-size:16px">🥇</span><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--gold)">Gold</div><div style="font-size:9px;color:var(--muted)">Referral on Gold plan</div></div><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--accent)">7%</div></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:11px;background:var(--surf2);border-radius:9px;"><span style="font-size:16px">💎</span><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--plat)">Platinum</div></div><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--accent)">8%</div></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:11px;background:var(--surf2);border-radius:9px;"><span style="font-size:16px">✨</span><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--diamond)">Diamond</div></div><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--accent)">10%</div></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:11px;background:rgba(192,132,252,0.05);border-radius:9px;border:1px solid rgba(192,132,252,0.15);"><span style="font-size:16px">👑</span><div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--elite)">Elite</div></div><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--elite)">12%</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     NOTIFICATIONS
+════════════════════════════════════════ -->
+<div class="page" id="page-notifications">
+  <div class="ph"><div><div class="pt">Notifications</div></div><button class="btn btn-g">Mark All Read</button></div>
+  <div style="max-width:640px;">
+    <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Today</div>
+    <div class="notif n-success"><div class="notif-icon">⚡</div><div style="flex:1"><div class="notif-title">Daily Earnings Credited</div><div class="notif-sub">$87.40 credited to your wallet. Gold plan: $75 · Bronze: $5 · Referral bonus: $22.50. All earnings are now withdrawable.</div><div class="notif-time">Today, 00:00 UTC</div></div></div>
+    <div class="notif n-warn"><div class="notif-icon">🛡</div><div style="flex:1"><div class="notif-title">KYC Verification Pending</div><div class="notif-sub">Complete ID verification to unlock withdrawals over $500 and access Platinum, Diamond & Elite plans.</div><div class="notif-time">Today, 09:15 UTC</div></div><button class="btn btn-warn" style="font-size:9px;padding:4px 8px;white-space:nowrap" onclick="go('kyc',qni(6))">Verify</button></div>
+    <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:18px 0 10px;">Yesterday</div>
+    <div class="notif n-info"><div class="notif-icon">⊕</div><div style="flex:1"><div class="notif-title">Referral Commission</div><div class="notif-sub">James M. invested in the Gold plan. You'll now earn $10.00/day in referral commissions — credited to your wallet daily.</div><div class="notif-time">Feb 19, 14:22 UTC</div></div></div>
+    <div class="notif n-warn"><div class="notif-icon">🔔</div><div style="flex:1"><div class="notif-title">Plan Maturity in 18 Days</div><div class="notif-sub">Your Bronze plan matures Mar 10. $500 principal + $150 earnings = $650 total will be credited to your wallet.</div><div class="notif-time">Feb 19, 00:00 UTC</div></div></div>
+    <div class="notif n-error"><div class="notif-icon">⚠️</div><div style="flex:1"><div class="notif-title">New Login from Unknown Device</div><div class="notif-sub">Login detected from Nairobi, Kenya on Chrome/Windows. If this wasn't you, change your password immediately.</div><div class="notif-time">Feb 18, 19:45 UTC</div></div><button class="btn btn-r" style="font-size:9px;padding:4px 8px;">Review</button></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     TRANSACTIONS
+════════════════════════════════════════ -->
+<div class="page" id="page-transactions">
+  <div class="ph"><div><div class="pt">Transaction History</div><div class="ps">Complete ledger of all credits, debits & plan activity</div></div><button class="btn btn-g">↓ Export CSV</button></div>
+  <div class="card" style="margin-bottom:16px;padding:14px 18px;">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <select class="fi" style="width:150px;"><option>All Types</option><option>Earnings</option><option>Deposits</option><option>Withdrawals</option><option>Referrals</option></select>
+      <input class="fi" type="date" style="width:150px;" value="2026-01-01"/>
+      <input class="fi" type="date" style="width:150px;" value="2026-02-20"/>
+      <button class="btn btn-p" style="font-size:10px;">Filter</button>
+      <button class="btn btn-g" style="font-size:10px;">Reset</button>
+    </div>
+  </div>
+  <div class="card">
+    <table class="tbl">
+      <thead><tr><th>Type</th><th>Description</th><th>Amount</th><th>Balance After</th><th>Date</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><div class="tx-icon tx-ear" style="display:inline-flex">⚡</div></td><td>Daily Earnings — Gold</td><td class="text-green">+$75.00</td><td>$4,218.50</td><td style="font-size:9px">Feb 20, 00:00</td><td><span class="tag bg-green">Credited</span></td></tr>
+        <tr><td><div class="tx-icon tx-ear" style="display:inline-flex">⚡</div></td><td>Daily Earnings — Bronze</td><td class="text-green">+$5.00</td><td>$4,143.50</td><td style="font-size:9px">Feb 20, 00:00</td><td><span class="tag bg-green">Credited</span></td></tr>
+        <tr><td><div class="tx-icon tx-ref" style="display:inline-flex">⊕</div></td><td>Referral Bonus — 3 refs</td><td class="text-green">+$22.50</td><td>$4,138.50</td><td style="font-size:9px">Feb 20, 00:00</td><td><span class="tag bg-green">Credited</span></td></tr>
+        <tr><td><div class="tx-icon tx-wit" style="display:inline-flex">↑</div></td><td>Withdrawal — BTC</td><td class="text-red">−$1,200.00</td><td>$4,116.00</td><td style="font-size:9px">Feb 10, 14:32</td><td><span class="tag bg-green">Completed</span></td></tr>
+        <tr><td><div class="tx-icon tx-dep" style="display:inline-flex">↓</div></td><td>Gold Plan Deposit (Locked)</td><td class="text-red">−$5,000.00</td><td style="font-size:9px;color:var(--muted)">Locked in plan</td><td style="font-size:9px">Feb 3, 10:15</td><td><span class="tag bg-red">Locked 🔒</span></td></tr>
+        <tr><td><div class="tx-icon tx-dep" style="display:inline-flex">↓</div></td><td>Bronze Plan Deposit (Locked)</td><td class="text-red">−$500.00</td><td style="font-size:9px;color:var(--muted)">Locked in plan</td><td style="font-size:9px">Jan 8, 09:42</td><td><span class="tag bg-red">Locked 🔒</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SETTINGS
+════════════════════════════════════════ -->
+<div class="page" id="page-settings">
+  <div class="ph"><div><div class="pt">Settings</div><div class="ps">Manage account, security & preferences</div></div></div>
+  <div class="settings-layout">
+    <div class="snav card" style="padding:10px;height:fit-content;">
+      <div class="sni2 active" onclick="stab(this,'st-profile')">👤 Profile</div>
+      <div class="sni2" onclick="stab(this,'st-security')">🔒 Security</div>
+      <div class="sni2" onclick="stab(this,'st-notifs')">🔔 Notifications</div>
+      <div class="sni2" onclick="stab(this,'st-payment')">💳 Payment Methods</div>
+      <div class="sni2" onclick="stab(this,'st-danger')">⚠ Danger Zone</div>
+    </div>
+    <div>
+      <div class="card" id="st-profile">
+        <div class="card-hd"><div><div class="ct">Profile</div></div><button class="btn btn-p">Save</button></div>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--border);">
+          <div class="ava" style="width:52px;height:52px;font-size:18px;">AK</div>
+          <div><button class="btn btn-g">Upload Photo</button><div style="font-size:9px;color:var(--muted);margin-top:5px">JPG or PNG · Max 2MB</div></div>
+        </div>
+        <div class="grid2">
+          <div class="field"><label class="fl">First Name</label><input class="fi" value="Amara"/></div>
+          <div class="field"><label class="fl">Last Name</label><input class="fi" value="Kone"/></div>
+          <div class="field"><label class="fl">Email</label><input class="fi" value="amara@example.com"/></div>
+          <div class="field"><label class="fl">Phone</label><input class="fi" value="+254 712 345 678"/></div>
+          <div class="field"><label class="fl">Country</label><select class="fi"><option>Kenya</option><option>Nigeria</option><option>Ghana</option></select></div>
+          <div class="field"><label class="fl">Display Currency</label><select class="fi"><option>USD ($)</option><option>KES (KSh)</option><option>EUR (€)</option></select></div>
+        </div>
+      </div>
+      <div class="card" id="st-security" style="display:none;">
+        <div class="card-hd"><div><div class="ct">Security</div></div></div>
+        <div class="setting-row"><div><div class="sr-title">Two-Factor Auth (2FA)</div><div class="sr-sub">Required for all withdrawals</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="setting-row"><div><div class="sr-title">Login Alerts</div><div class="sr-sub">Email on new device login</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="setting-row"><div><div class="sr-title">Withdrawal Confirmation</div><div class="sr-sub">Email confirmation before processing</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="divider"/>
+        <div class="field"><label class="fl">New Password</label><input class="fi" type="password" placeholder="New password..."/></div>
+        <div class="field"><label class="fl">Confirm Password</label><input class="fi" type="password" placeholder="Repeat password..."/></div>
+        <button class="btn btn-p">Update Password</button>
+      </div>
+      <div class="card" id="st-notifs" style="display:none;">
+        <div class="card-hd"><div><div class="ct">Notifications</div></div></div>
+        <div class="setting-row"><div><div class="sr-title">Daily Earnings Credit</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="setting-row"><div><div class="sr-title">Withdrawal Updates</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="setting-row"><div><div class="sr-title">Referral Activity</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="setting-row"><div><div class="sr-title">Plan Maturity Alerts</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="setting-row"><div><div class="sr-title">Marketing / Promotions</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div class="card" id="st-payment" style="display:none;">
+        <div class="card-hd"><div><div class="ct">Payment Methods</div></div><button class="btn btn-p">＋ Add</button></div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--surf2);border-radius:10px;border:1px solid rgba(0,229,160,0.15);">
+            <span style="font-size:18px">₿</span><div style="flex:1"><div style="font-size:11px;font-weight:500">Bitcoin</div><div style="font-size:9px;color:var(--muted)">bc1qar0...5mdq</div></div><span class="tag bg-green">Default</span><button class="btn btn-r" style="font-size:8.5px;padding:3px 8px;">Remove</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--surf2);border-radius:10px;border:1px solid var(--border);">
+            <span style="font-size:18px">💲</span><div style="flex:1"><div style="font-size:11px;font-weight:500">USDT TRC-20</div><div style="font-size:9px;color:var(--muted)">TQBr...4xkT</div></div><button class="btn btn-g" style="font-size:8.5px;padding:3px 8px;">Set Default</button><button class="btn btn-r" style="font-size:8.5px;padding:3px 8px;">Remove</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" id="st-danger" style="display:none;border-color:rgba(255,77,109,0.18);">
+        <div class="card-hd"><div><div class="ct" style="color:var(--red)">Danger Zone</div></div></div>
+        <div style="display:flex;flex-direction:column;gap:11px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:rgba(255,77,109,0.04);border:1px solid rgba(255,77,109,0.14);border-radius:10px;gap:12px;flex-wrap:wrap;">
+            <div><div style="font-size:11px;font-weight:500">Pause Account</div><div style="font-size:9px;color:var(--muted)">Stop all earnings and new investments</div></div>
+            <button class="btn btn-r">Pause</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:rgba(255,77,109,0.04);border:1px solid rgba(255,77,109,0.14);border-radius:10px;gap:12px;flex-wrap:wrap;">
+            <div><div style="font-size:11px;font-weight:500">Delete Account</div><div style="font-size:9px;color:var(--muted)">Permanently remove all data</div></div>
+            <button class="btn btn-r" onclick="if(confirm('Permanently delete?'))alert('Deletion request sent to support.')">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     ADMIN PANEL (role-gated)
+════════════════════════════════════════ -->
+<div class="page" id="page-admin">
+  <div class="ph"><div><div class="pt">Admin Panel</div><div class="ps">Platform management · You are logged in as Administrator</div></div><div style="display:flex;gap:8px;"><button class="btn btn-g">↓ Export</button><button class="btn btn-p">＋ Add User</button></div></div>
+  <div class="alert-box alert-blue" style="margin-bottom:20px;"><span style="font-size:16px">👑</span><div style="font-size:10px;color:var(--muted2)"><strong style="color:var(--text)">Administrator Mode</strong> — This panel is restricted to admin accounts only. Regular users will never see this page.</div></div>
+  <div class="grid4" style="margin-bottom:22px;">
+    <div class="sc hl"><div class="sc-lbl">Total Users</div><div class="sc-val text-green">1,284</div><div class="sc-meta">+12 this week</div></div>
+    <div class="sc"><div class="sc-lbl">Funds Under Management</div><div class="sc-val">$2.4M</div><div class="sc-meta">Across 847 investors</div></div>
+    <div class="sc"><div class="sc-lbl">Today's Payouts</div><div class="sc-val text-green">$28,420</div><div class="sc-meta">Paid 00:00 UTC</div></div>
+    <div class="sc"><div class="sc-lbl">Pending KYC</div><div class="sc-val text-red">24</div><div class="sc-meta">Awaiting review</div></div>
+  </div>
+  <div class="admin-tabs">
+    <div class="atab active" onclick="atab(this,'at-users')">👥 Users</div>
+    <div class="atab" onclick="atab(this,'at-kyc')">🛡 KYC Queue <span class="badge bg-red" style="margin-left:4px">24</span></div>
+    <div class="atab" onclick="atab(this,'at-investments')">💰 Investments</div>
+    <div class="atab" onclick="atab(this,'at-withdrawals')">↑ Withdrawals</div>
+    <div class="atab" onclick="atab(this,'at-deposits')">↓ Deposits</div>
+    <div class="atab" onclick="atab(this,'at-plans')">⬡ Plan Config</div>
+    <div class="atab" onclick="atab(this,'at-stats')">📊 Platform Stats</div>
+  </div>
+
+  <div class="adm-content active" id="at-users">
+    <div class="card" style="margin-bottom:14px;padding:12px 16px;">
+      <div style="display:flex;gap:9px;flex-wrap:wrap;">
+        <input class="fi" style="max-width:250px;" placeholder="🔍 Search name, email..."/>
+        <select class="fi" style="width:140px;"><option>All Statuses</option><option>Active</option><option>KYC Pending</option><option>Suspended</option></select>
+        <select class="fi" style="width:130px;"><option>All Plans</option><option>Bronze</option><option>Gold</option><option>Elite</option></select>
+        <button class="btn btn-p" style="font-size:10px;">Search</button>
+      </div>
+    </div>
+    <div class="card"><table class="tbl">
+      <thead><tr><th>User</th><th>Plan</th><th>Locked Capital</th><th>Wallet</th><th>KYC</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td><div style="display:flex;align-items:center;gap:8px"><div class="ava" style="width:26px;height:26px;font-size:9px;">AK</div><div><div style="font-size:10.5px;font-weight:500">Amara Kone</div><div style="font-size:8.5px;color:var(--muted)">amara@ex.com</div></div></div></td><td><span class="badge bg-gold">Gold</span></td><td class="text-red">$5,500 🔒</td><td class="text-green">$4,218</td><td><span class="tag bg-warn">Pending</span></td><td><span class="tag bg-green">Active</span></td><td><div style="display:flex;gap:5px;"><button class="action-btn ab-view">View</button><button class="action-btn ab-warn">Flag</button><button class="action-btn ab-reject">Suspend</button></div></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px"><div class="ava" style="width:26px;height:26px;font-size:9px;background:linear-gradient(135deg,var(--gold),#e76f51)">JM</div><div><div style="font-size:10.5px;font-weight:500">James M.</div><div style="font-size:8.5px;color:var(--muted)">james@ex.com</div></div></div></td><td><span class="badge bg-gold">Gold</span></td><td class="text-red">$3,000 🔒</td><td class="text-green">$912</td><td><span class="tag bg-green">Verified</span></td><td><span class="tag bg-green">Active</span></td><td><div style="display:flex;gap:5px;"><button class="action-btn ab-view">View</button><button class="action-btn ab-reject">Suspend</button></div></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px"><div class="ava" style="width:26px;height:26px;font-size:9px;background:linear-gradient(135deg,var(--elite),#c026d3)">SO</div><div><div style="font-size:10.5px;font-weight:500">Sara O.</div><div style="font-size:8.5px;color:var(--muted)">sara@ex.com</div></div></div></td><td><span class="badge bg-green">Diamond</span></td><td class="text-red">$8,000 🔒</td><td class="text-green">$3,240</td><td><span class="tag bg-green">Verified</span></td><td><span class="tag bg-green">Active</span></td><td><div style="display:flex;gap:5px;"><button class="action-btn ab-view">View</button><button class="action-btn ab-reject">Suspend</button></div></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px"><div class="ava" style="width:26px;height:26px;font-size:9px;background:var(--red)">XX</div><div><div style="font-size:10.5px;font-weight:500">Unknown</div><div style="font-size:8.5px;color:var(--muted)">test@ex.com</div></div></div></td><td>—</td><td>$0</td><td>$0</td><td><span class="tag bg-muted">None</span></td><td><span class="tag bg-red">Suspended</span></td><td><div style="display:flex;gap:5px;"><button class="action-btn ab-view">View</button><button class="action-btn ab-approve">Restore</button></div></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="adm-content" id="at-kyc">
+    <div class="card"><div class="card-hd"><div><div class="ct">KYC Review Queue</div><div class="cs">24 submissions pending review</div></div><div style="display:flex;gap:7px;"><button class="btn btn-g" style="font-size:9px;">Bulk Approve</button><button class="btn btn-r" style="font-size:9px;">Bulk Reject</button></div></div>
+    <table class="tbl">
+      <thead><tr><th>User</th><th>Document</th><th>Country</th><th>Submitted</th><th>Risk</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td>Amara Kone</td><td>National ID</td><td>Kenya</td><td style="font-size:9px">Feb 20, 09:15</td><td><span class="tag bg-green">Low</span></td><td><div style="display:flex;gap:5px;"><button class="action-btn ab-view">View Docs</button><button class="action-btn ab-approve" onclick="alert('✅ KYC Approved!')">Approve</button><button class="action-btn ab-reject">Reject</button></div></td></tr>
+        <tr><td>Rita N.</td><td>Passport</td><td>Nigeria</td><td style="font-size:9px">Feb 20, 08:00</td><td><span class="tag bg-warn">Medium</span></td><td><div style="display:flex;gap:5px;"><button class="action-btn ab-view">View Docs</button><button class="action-btn ab-approve">Approve</button><button class="action-btn ab-reject">Reject</button></div></td></tr>
+        <tr><td>Peter O.</td><td>Driver's Lic</td><td>Ghana</td><td style="font-size:9px">Feb 19, 22:00</td><td><span class="tag bg-red">High</span></td><td><div style="display:flex;gap:5px;"><button class="action-btn ab-view">View Docs</button><button class="action-btn ab-approve">Approve</button><button class="action-btn ab-reject">Reject</button></div></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="adm-content" id="at-investments">
+    <div class="card"><div class="card-hd"><div><div class="ct">All Active Investments</div><div class="cs">Capital locked · Cannot be withdrawn by users</div></div></div>
+    <table class="tbl">
+      <thead><tr><th>User</th><th>Plan</th><th>Locked</th><th>Daily Earnings</th><th>Started</th><th>Matures</th><th>Progress</th></tr></thead>
+      <tbody>
+        <tr><td>Amara K.</td><td><span class="badge bg-gold">Gold</span></td><td class="text-red">$5,000 🔒</td><td class="text-green">$75.00/day</td><td>Feb 3</td><td>Mar 19</td><td><div class="prog" style="width:80px"><div class="prog-f" style="width:38%"></div></div></td></tr>
+        <tr><td>Sara O.</td><td><span class="badge bg-green">Diamond</span></td><td class="text-red">$8,000 🔒</td><td class="text-green">$160.00/day</td><td>Jan 20</td><td>Mar 20</td><td><div class="prog" style="width:80px"><div class="prog-f" style="width:52%"></div></div></td></tr>
+        <tr><td>Tom K.</td><td><span class="badge bg-blue">Platinum</span></td><td class="text-red">$5,000 🔒</td><td class="text-green">$90.00/day</td><td>Jan 14</td><td>Feb 28</td><td><div class="prog" style="width:80px"><div class="prog-f" style="width:85%"></div></div></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="adm-content" id="at-withdrawals">
+    <div class="card"><div class="card-hd"><div><div class="ct">Withdrawal Queue</div><div class="cs">Only wallet earnings — no locked capital withdrawals</div></div></div>
+    <table class="tbl">
+      <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Wallet</th><th>KYC</th><th>Type</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>Amara K.</td><td>$500</td><td>BTC</td><td style="font-size:9px;color:var(--muted)">bc1q...5mdq</td><td><span class="tag bg-warn">Pending</span></td><td><span class="badge bg-green">Earnings ✓</span></td><td><span class="tag bg-warn">Pending</span></td><td><div style="display:flex;gap:5px;"><button class="action-btn ab-approve" onclick="alert('✅ Approved!')">Approve</button><button class="action-btn ab-reject">Reject</button></div></td></tr>
+        <tr><td>Sara O.</td><td>$2,400</td><td>USDT</td><td style="font-size:9px;color:var(--muted)">TQBr...4xkT</td><td><span class="tag bg-green">Verified</span></td><td><span class="badge bg-green">Earnings ✓</span></td><td><span class="tag bg-green">Approved</span></td><td><div style="display:flex;gap:5px;"><button class="action-btn ab-view">View</button></div></td></tr>
+        <tr><td>Tom K.</td><td>$5,500</td><td>Bank</td><td style="font-size:9px;color:var(--muted)">****4821</td><td><span class="tag bg-warn">Pending KYC</span></td><td><span class="badge bg-red">⚠ Verify</span></td><td><span class="tag bg-red">On Hold</span></td><td><div style="display:flex;gap:5px;"><button class="action-btn ab-view">Review</button></div></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="adm-content" id="at-deposits">
+    <div class="card"><div class="card-hd"><div><div class="ct">Deposit Management</div><div class="cs">Confirm incoming deposits and credit to user wallets</div></div></div>
+    <table class="tbl">
+      <thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>Method</th><th>TX Hash</th><th>Received</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>Amara K.</td><td><span class="badge bg-gold">Gold</span></td><td>$5,000</td><td>BTC</td><td style="font-size:9px;color:var(--muted)">0xabc...def3</td><td style="font-size:9px">Feb 3, 10:15</td><td><span class="tag bg-green">Confirmed</span></td><td><button class="action-btn ab-view">View</button></td></tr>
+        <tr><td>Rita N.</td><td><span class="badge bg-silver">Silver</span></td><td>$800</td><td>USDT</td><td style="font-size:9px;color:var(--muted)">Pending TX</td><td style="font-size:9px">Feb 20, 14:00</td><td><span class="tag bg-warn">Unconfirmed</span></td><td><div style="display:flex;gap:5px;"><button class="action-btn ab-approve" onclick="alert('✅ Deposit confirmed and credited!')">Confirm</button><button class="action-btn ab-reject">Reject</button></div></td></tr>
+        <tr><td>Peter O.</td><td><span class="badge bg-blue">Platinum</span></td><td>$6,200</td><td>Bank</td><td style="font-size:9px;color:var(--muted)">KYC Required</td><td style="font-size:9px">Feb 19, 09:00</td><td><span class="tag bg-red">KYC Hold</span></td><td><button class="action-btn ab-view">Review</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="adm-content" id="at-plans">
+    <div class="card"><div class="card-hd"><div><div class="ct">Plan Configuration</div><div class="cs">Adjust rates, limits & lock periods</div></div><button class="btn btn-p">Save All</button></div>
+    <table class="tbl">
+      <thead><tr><th>Plan</th><th>Min ($)</th><th>Max ($)</th><th>Daily %</th><th>Lock Days</th><th>Ref %</th><th>Active</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge bg-bronze">🥉 Bronze</span></td><td><input class="fi" style="width:70px;padding:4px 7px;" value="100"/></td><td><input class="fi" style="width:70px;padding:4px 7px;" value="499"/></td><td><input class="fi" style="width:55px;padding:4px 7px;" value="1.0"/></td><td><input class="fi" style="width:55px;padding:4px 7px;" value="30"/></td><td><input class="fi" style="width:45px;padding:4px 7px;" value="5"/></td><td><div class="toggle on" onclick="this.classList.toggle('on')"></div></td></tr>
+        <tr><td><span class="badge bg-silver">🥈 Silver</span></td><td><input class="fi" style="width:70px;padding:4px 7px;" value="500"/></td><td><input class="fi" style="width:70px;padding:4px 7px;" value="1999"/></td><td><input class="fi" style="width:55px;padding:4px 7px;" value="1.2"/></td><td><input class="fi" style="width:55px;padding:4px 7px;" value="30"/></td><td><input class="fi" style="width:45px;padding:4px 7px;" value="5"/></td><td><div class="toggle on" onclick="this.classList.toggle('on')"></div></td></tr>
+        <tr><td><span class="badge bg-gold">🥇 Gold</span></td><td><input class="fi" style="width:70px;padding:4px 7px;" value="2000"/></td><td><input class="fi" style="width:70px;padding:4px 7px;" value="4999"/></td><td><input class="fi" style="width:55px;padding:4px 7px;" value="1.5"/></td><td><input class="fi" style="width:55px;padding:4px 7px;" value="45"/></td><td><input class="fi" style="width:45px;padding:4px 7px;" value="7"/></td><td><div class="toggle on" onclick="this.classList.toggle('on')"></div></td></tr>
+        <tr><td><span class="badge bg-blue">💎 Platinum</span></td><td><input class="fi" style="width:70px;padding:4px 7px;" value="5000"/></td><td><input class="fi" style="width:70px;padding:4px 7px;" value="7499"/></td><td><input class="fi" style="width:55px;padding:4px 7px;" value="1.8"/></td><td><input class="fi" style="width:55px;padding:4px 7px;" value="45"/></td><td><input class="fi" style="width:45px;padding:4px 7px;" value="8"/></td><td><div class="toggle on" onclick="this.classList.toggle('on')"></div></td></tr>
+        <tr><td><span class="badge bg-green">✨ Diamond</span></td><td><input class="fi" style="width:70px;padding:4px 7px;" value="7500"/></td><td><input class="fi" style="width:70px;padding:4px 7px;" value="9999"/></td><td><input class="fi" style="width:55px;padding:4px 7px;" value="2.0"/></td><td><input class="fi" style="width:55px;padding:4px 7px;" value="60"/></td><td><input class="fi" style="width:45px;padding:4px 7px;" value="10"/></td><td><div class="toggle on" onclick="this.classList.toggle('on')"></div></td></tr>
+        <tr><td><span class="badge bg-purple">👑 Elite</span></td><td><input class="fi" style="width:70px;padding:4px 7px;" value="10000"/></td><td><input class="fi" style="width:70px;padding:4px 7px;" value="999999"/></td><td><input class="fi" style="width:55px;padding:4px 7px;" value="2.5"/></td><td><input class="fi" style="width:55px;padding:4px 7px;" value="60"/></td><td><input class="fi" style="width:45px;padding:4px 7px;" value="12"/></td><td><div class="toggle on" onclick="this.classList.toggle('on')"></div></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="adm-content" id="at-stats">
+    <div class="grid4" style="margin-bottom:18px;">
+      <div class="sc"><div class="sc-lbl">Total Deposits (All Time)</div><div class="sc-val text-green">$8.2M</div></div>
+      <div class="sc"><div class="sc-lbl">Total Withdrawals</div><div class="sc-val">$3.1M</div></div>
+      <div class="sc"><div class="sc-lbl">Total Earnings Paid</div><div class="sc-val text-green">$1.8M</div></div>
+      <div class="sc"><div class="sc-lbl">Platform Revenue</div><div class="sc-val">$420K</div></div>
+    </div>
+    <div class="bot-grid">
+      <div class="card">
+        <div class="card-hd"><div><div class="ct">Plan Distribution</div></div></div>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <div><div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:4px"><span>Bronze</span><span class="text-muted">212 · 25%</span></div><div class="prog"><div class="prog-f" style="width:25%;background:var(--bronze)"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:4px"><span>Silver</span><span class="text-muted">178 · 21%</span></div><div class="prog"><div class="prog-f" style="width:21%;background:var(--silver)"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:4px"><span>Gold</span><span class="text-muted">240 · 28%</span></div><div class="prog"><div class="prog-f" style="width:28%;background:var(--gold)"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:4px"><span>Platinum</span><span class="text-muted">102 · 12%</span></div><div class="prog"><div class="prog-f" style="width:12%;background:var(--plat)"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:4px"><span>Diamond</span><span class="text-muted">76 · 9%</span></div><div class="prog"><div class="prog-f" style="width:9%;background:var(--diamond)"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:10.5px;margin-bottom:4px"><span>Elite</span><span class="text-muted">39 · 5%</span></div><div class="prog"><div class="prog-f" style="width:5%;background:var(--elite)"></div></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div><div class="ct">User Growth</div><div class="cs">New signups per month</div></div></div>
+        <div style="height:140px;position:relative;">
+          <svg viewBox="0 0 400 120" preserveAspectRatio="none" style="width:100%;height:100%;">
+            <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c084fc" stop-opacity=".14"/><stop offset="100%" stop-color="#c084fc" stop-opacity="0"/></linearGradient></defs>
+            <path d="M0,100 C60,94 120,86 180,78 C240,70 300,76 360,58 L400,44 L400,120 L0,120Z" fill="url(#ag)"/>
+            <path d="M0,100 C60,94 120,86 180,78 C240,70 300,76 360,58 L400,44" fill="none" stroke="var(--elite)" stroke-width="2"/>
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:8.5px;color:var(--muted);margin-top:4px;"><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<div class="wf-badge">Wireframe · VaultX v3</div>
+
+<script>
+/* ─── STATE ─── */
+let currentRole = 'user'; // 'user' or 'admin'
+
+/* ─── AUTH ─── */
+function showAuth(panel){
+  document.querySelectorAll('.auth-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('auth-'+panel).classList.add('active');
+}
+
+function doLogin(){
+  const e=document.getElementById('login-email').value;
+  const p=document.getElementById('login-pass').value;
+  if(!e||!p){alert('Please enter email and password');return;}
+  if(e.includes('admin')){doLoginAs('admin');}else{doLoginAs('user');}
+}
+
+function doSignup(){
+  showAuth('verify');
+}
+
+function doLoginAs(role){
+  currentRole=role;
+  setupRole(role);
+  document.getElementById('auth-screen').classList.add('hidden');
+  setTimeout(()=>{document.getElementById('auth-screen').style.display='none';},400);
+  document.getElementById('app').classList.add('visible');
+  if(role==='admin'){
+    document.getElementById('dash-greeting').textContent='Admin Dashboard 👑';
+    document.getElementById('sidebar-name').textContent='Admin User';
+    document.getElementById('sidebar-tier').textContent='👑 Administrator';
+    document.getElementById('sidebar-ava').textContent='AD';
+    document.getElementById('sidebar-ava').className='ava admin-ava';
+    document.getElementById('topbar-ava').textContent='AD';
+    document.getElementById('topbar-ava').className='ava admin-ava';
+  }
+}
+
+function setupRole(role){
+  const adminEls=document.querySelectorAll('.admin-only');
+  adminEls.forEach(el=>{
+    el.style.display = role==='admin' ? '' : 'none';
+  });
+}
+
+function doLogout(){
+  if(!confirm('Sign out?'))return;
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('auth-screen').classList.remove('hidden');
+  currentRole='user';
+  showAuth('login');
+  go('dashboard',document.querySelectorAll('.ni')[0]);
+}
+
+/* ─── NAVIGATION ─── */
+function go(page, navEl){
+  // Block admin page for non-admins
+  if(page==='admin'&&currentRole!=='admin'){
+    alert('🚫 Access denied. Admin panel is restricted to administrators only.');
+    return;
+  }
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  const el=document.getElementById('page-'+page);
+  if(el)el.classList.add('active');
+  if(navEl)navEl.classList.add('active');
+  closeSidebar();
+  window.scrollTo(0,0);
+}
+function qni(n){return document.querySelectorAll('.ni')[n];}
+
+/* ─── MOBILE SIDEBAR ─── */
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('overlay');
+  sb.classList.toggle('mob-open');
+  ov.classList.toggle('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('mob-open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+/* ─── TABS ─── */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    t.closest('.tab-row').querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+  });
+});
+function atab(el,id){
+  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.adm-content').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const t=document.getElementById(id);
+  if(t)t.classList.add('active');
+}
+function stab(el,id){
+  document.querySelectorAll('.sni2').forEach(s=>s.classList.remove('active'));
+  ['st-profile','st-security','st-notifs','st-payment','st-danger'].forEach(i=>{const e=document.getElementById(i);if(e)e.style.display='none';});
+  el.classList.add('active');
+  const t=document.getElementById(id);
+  if(t)t.style.display='block';
+}
+
+/* ─── PLAN SELECTION ─── */
+let cPlan={name:'',range:'',roi:0,days:0};
+function selPlan(name,range,roi,days){
+  ['bronze','silver','gold','platinum','diamond','elite'].forEach(p=>{
+    const c=document.getElementById('pc-'+p);const b=document.getElementById('pb-'+p);
+    if(c)c.classList.remove('sel');
+    if(b){b.classList.remove('sel');b.textContent='Select '+p.charAt(0).toUpperCase()+p.slice(1);}
+  });
+  document.getElementById('pc-'+name).classList.add('sel');
+  const btn=document.getElementById('pb-'+name);
+  btn.classList.add('sel');btn.textContent='✓ Selected';
+  cPlan={name,range,roi,days};
+  document.getElementById('dp-n').textContent=name.charAt(0).toUpperCase()+name.slice(1);
+  document.getElementById('dp-r').textContent=range;
+  document.getElementById('dp-roi').textContent=roi+'%';
+  document.getElementById('dp-d').textContent=days;
+  document.getElementById('ri-r').textContent=roi+'%';
+  document.getElementById('ri-d').textContent=days+' days';
+  document.getElementById('inv-drawer').classList.add('show');
+  calcROI();
+  document.getElementById('inv-drawer').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function closeDr(){
+  document.getElementById('inv-drawer').classList.remove('show');
+  ['bronze','silver','gold','platinum','diamond','elite'].forEach(p=>{
+    const c=document.getElementById('pc-'+p);const b=document.getElementById('pb-'+p);
+    if(c)c.classList.remove('sel');
+    if(b){b.classList.remove('sel');b.textContent='Select '+p.charAt(0).toUpperCase()+p.slice(1);}
+  });
+}
+function sIA(v){const i=document.getElementById('inv-amt');if(i){i.value=v;calcROI();}}
+function calcROI(){
+  const amt=parseFloat(document.getElementById('inv-amt')?.value)||0;
+  const daily=amt*(cPlan.roi/100);
+  const total=daily*cPlan.days;
+  const payout=amt+total;
+  document.getElementById('ri-p').textContent='$'+amt.toFixed(2)+' 🔒';
+  document.getElementById('ri-de').textContent='+$'+daily.toFixed(2);
+  document.getElementById('ri-te').textContent='+$'+total.toFixed(2);
+  document.getElementById('ri-tp').textContent='$'+payout.toFixed(2);
+}
+function confirmInv(){
+  const amt=parseFloat(document.getElementById('inv-amt')?.value)||0;
+  if(!amt||amt<100){alert('⚠ Minimum investment is $100');return;}
+  if(amt>4218.50){alert('⚠ Insufficient wallet balance ($4,218.50 available)');return;}
+  const daily=(amt*(cPlan.roi/100)).toFixed(2);
+  alert('✅ Investment locked!\n\nPlan: '+cPlan.name.toUpperCase()+'\nLocked: $'+amt.toFixed(2)+' 🔒\nDaily earnings: $'+daily+' (credited to wallet)\n\nEarnings begin tomorrow at 00:00 UTC.\nCapital released at plan maturity.');
+  closeDr();
+}
+
+/* ─── DEPOSIT ─── */
+let depMethod='btc';
+const wallets={btc:'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',usdt:'TQBr2tHeXW3mBNP4iCNnwJkKDhXNM4xkT',eth:'0x742d35Cc6634C0532925a3b844Bc454e4438f44e',bank:'USE BANK TRANSFER PANEL'};
+const coins={btc:'BTC',usdt:'USDT',eth:'ETH',bank:'—'};
+const fees={btc:2,usdt:1,eth:5,bank:0};
+
+function selDepPlan(el,name,range){
+  document.querySelectorAll('.dep-layout .mc').forEach(m=>m.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('dep-plan-hint').textContent='Selected plan: '+name+' ('+range+')';
+}
+function selDepMethod(el,method,label){
+  document.querySelectorAll('#page-deposit .method-grid .mc').forEach(m=>m.classList.remove('sel'));
+  el.classList.add('sel');
+  depMethod=method;
+  document.getElementById('crypto-method-label').textContent='Send '+label+' to this address';
+  document.getElementById('dep-coin-label').textContent=coins[method];
+  if(method==='bank'){
+    document.getElementById('crypto-pay-panel').style.display='none';
+    document.getElementById('bank-pay-panel').style.display='block';
+  } else {
+    document.getElementById('crypto-pay-panel').style.display='block';
+    document.getElementById('bank-pay-panel').style.display='none';
+    document.getElementById('dep-wallet-addr').textContent=wallets[method];
+  }
+  calcDepFee();
+}
+function setDepAmt(v){const i=document.getElementById('dep-amount');if(i){i.value=v;calcDepFee();}}
+function calcDepFee(){
+  const amt=parseFloat(document.getElementById('dep-amount')?.value)||0;
+  const fee=fees[depMethod]||2;
+  const credited=Math.max(0,amt-fee);
+  document.getElementById('dep-you-send').textContent='$'+amt.toFixed(2);
+  document.getElementById('dep-fee').textContent='−$'+fee.toFixed(2);
+  document.getElementById('dep-credited').textContent='$'+credited.toFixed(2);
+}
+function copyAddr(){
+  const addr=document.getElementById('dep-wallet-addr').textContent.trim();
+  navigator.clipboard?.writeText(addr);
+  const el=document.getElementById('dep-wallet-addr');
+  el.textContent='✓ Copied!';
+  setTimeout(()=>el.textContent=wallets[depMethod],2000);
+}
+function confirmDeposit(){
+  const amt=parseFloat(document.getElementById('dep-amount')?.value)||0;
+  if(!amt){alert('⚠ Please enter an amount');return;}
+  alert('✅ Payment submitted!\n\nWe\'re monitoring the blockchain for your transaction.\nYour wallet will be credited within 3 network confirmations.\n\nAmount: $'+amt.toFixed(2));
+}
+
+/* ─── WITHDRAW ─── */
+function selMC(el){document.querySelectorAll('#page-withdraw .mc').forEach(m=>m.classList.remove('sel'));el.classList.add('sel');}
+function setWithAmt(v){const i=document.getElementById('with-amount');if(i){i.value=v;calcWithFee();}}
+function calcWithFee(){
+  const amt=parseFloat(document.getElementById('with-amount')?.value)||0;
+  const fee=2;
+  document.getElementById('w-amt').textContent='$'+amt.toFixed(2);
+  document.getElementById('w-fee').textContent='−$'+fee.toFixed(2);
+  document.getElementById('w-net').textContent='$'+Math.max(0,amt-fee).toFixed(2);
+}
+function confirmWithdraw(){
+  const amt=parseFloat(document.getElementById('with-amount')?.value)||0;
+  if(!amt||amt<10){alert('⚠ Minimum withdrawal is $10');return;}
+  if(amt>4218.50){alert('⚠ Insufficient wallet balance. You can only withdraw earned funds ($4,218.50). Invested capital ($5,500) is locked until plan maturity.');return;}
+  alert('✅ Withdrawal submitted!\n\nAmount: $'+amt.toFixed(2)+'\nYou receive: $'+(amt-2).toFixed(2)+'\n\nProcessing within 24 hours.');
+}
+
+/* ─── KYC ─── */
+function simUpload(el,side){
+  el.innerHTML='<div style="font-size:26px;margin-bottom:7px">✅</div><div style="font-size:11px;font-weight:600;color:var(--accent)">'+side.charAt(0).toUpperCase()+side.slice(1)+' uploaded</div><div style="font-size:9px;color:var(--muted);margin-top:3px">ID_'+side+'_2026.jpg · 2.1MB</div>';
+  el.style.borderColor='var(--accent)';
+  el.style.background='rgba(0,229,160,0.04)';
+}
+
+/* ─── COUNTDOWN ─── */
+function updateCountdown(){
+  const now=new Date();
+  const next=new Date(now);
+  next.setUTCHours(24,0,0,0);
+  const diff=next-now;
+  const h=Math.floor(diff/3600000);
+  const m=Math.floor((diff%3600000)/60000);
+  const s=Math.floor((diff%60000)/1000);
+  const str=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const cd=document.getElementById('dash-countdown');
+  const cd2=document.getElementById('countdown');
+  if(cd)cd.textContent=str.substring(0,5);
+  if(cd2)cd2.textContent=str;
+}
+setInterval(updateCountdown,1000);
+updateCountdown();
+
+/* ─── PASSWORD STRENGTH ─── */
+const pp=document.querySelector('#auth-signup input[type=password]');
+if(pp)pp.addEventListener('input',function(){
+  const v=this.value;
+  let s=0;
+  if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+  const colors=['var(--red)','var(--red)','var(--warn)','var(--accent)','var(--accent)'];
+  const labels=['Too weak','Weak','Fair','Strong','Very strong'];
+  const bar=document.getElementById('ps-bar');
+  const lbl=document.getElementById('ps-label');
+  if(bar){bar.style.width=(s*25)+'%';bar.style.background=colors[s]||colors[0];}
+  if(lbl){lbl.textContent=labels[s]||'';lbl.style.color=colors[s]||'var(--muted)';}
+});
+
+/* ─── OTP AUTO-ADVANCE ─── */
+document.querySelectorAll('#auth-verify input').forEach((inp,i,arr)=>{
+  inp.addEventListener('input',()=>{if(inp.value.length===1&&arr[i+1])arr[i+1].focus();});
+});
+</script>
+</body>
+</html>
